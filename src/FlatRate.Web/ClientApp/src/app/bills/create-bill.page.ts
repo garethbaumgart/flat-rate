@@ -543,8 +543,8 @@ export class CreateBillPage implements OnInit {
         summary: 'Success',
         detail: 'Bill created successfully.'
       });
-      // Navigate to home after a short delay (bill history will be in Issue #7)
-      setTimeout(() => this.router.navigate(['/']), 1500);
+      // Navigate to bills list after a short delay
+      setTimeout(() => this.router.navigate(['/bills']), 1500);
     } else {
       this.messageService.add({
         severity: 'error',
@@ -555,7 +555,7 @@ export class CreateBillPage implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/']);
+    this.router.navigate(['/bills']);
   }
 
   private formatDate(date: Date): string {
