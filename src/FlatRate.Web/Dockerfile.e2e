@@ -2,17 +2,18 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
 WORKDIR /src
 
-# Copy solution and project files
-COPY src/FlatRate.slnx ./
+# Copy project files
 COPY src/FlatRate.Domain/*.csproj FlatRate.Domain/
 COPY src/FlatRate.Application/*.csproj FlatRate.Application/
 COPY src/FlatRate.Infrastructure/*.csproj FlatRate.Infrastructure/
 COPY src/FlatRate.Web/*.csproj FlatRate.Web/
 
-# Restore dependencies
-RUN dotnet restore FlatRate.slnx
+# Restore dependencies (using project file directly, not solution)
+WORKDIR /src/FlatRate.Web
+RUN dotnet restore
 
 # Copy source code
+WORKDIR /src
 COPY src/FlatRate.Domain/ FlatRate.Domain/
 COPY src/FlatRate.Application/ FlatRate.Application/
 COPY src/FlatRate.Infrastructure/ FlatRate.Infrastructure/
