@@ -33,6 +33,7 @@ export default defineConfig({
     reuseExistingServer: !process.env['CI'],
     timeout: 180000,
     env: {
+      ...process.env,
       ASPNETCORE_ENVIRONMENT: 'Development',
     },
   },
