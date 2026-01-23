@@ -1,4 +1,8 @@
+using FlatRate.Domain.Aggregates.Bills;
+using FlatRate.Domain.Aggregates.Properties;
+using FlatRate.Domain.Repositories;
 using FlatRate.Infrastructure.Persistence;
+using FlatRate.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +17,11 @@ public static class DependencyInjection
 
         services.AddDbContext<FlatRateDbContext>(options =>
             options.UseNpgsql(connectionString));
+
+        // Register repositories
+        services.AddScoped<IPropertyRepository, PropertyRepository>();
+        services.AddScoped<IBillRepository, BillRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }
