@@ -10,7 +10,9 @@ export default defineConfig({
   forbidOnly: !!process.env['CI'],
   retries: process.env['CI'] ? 2 : 0,
   workers: process.env['CI'] ? 1 : undefined,
-  reporter: process.env['CI'] ? 'github' : 'html',
+  reporter: process.env['CI']
+    ? [['github'], ['html', { outputFolder: 'playwright-report' }]]
+    : 'html',
 
   use: {
     baseURL: 'http://localhost:5000',
@@ -26,7 +28,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'cd ../.. && dotnet run',
+    command: 'cd .. && dotnet run --no-build',
     url: 'http://localhost:5000/api/health',
     reuseExistingServer: !process.env['CI'],
     timeout: 120000,
