@@ -1,0 +1,71 @@
+namespace FlatRate.Domain.ValueObjects;
+
+/// <summary>
+/// Represents a tariff structure with one or more steps/tiers.
+/// </summary>
+public sealed record Tariff
+{
+    public IReadOnlyList<TariffStep> Steps { get; }
+
+    private Tariff(IReadOnlyList<TariffStep> steps)
+    {
+        Steps = steps;
+    }
+
+    /// <summary>
+    /// Creates a flat-rate tariff (single tier).
+    /// </summary>
+    public static Tariff CreateFlatRate(decimal rate)
+    {
+        if (rate < 0)
+            throw new ArgumentException("Rate cannot be negative.", nameof(rate));
+
+        var steps = new List<TariffStep>
+        {
+            TariffStep.Create(double.MaxValue, rate)
+        };
+
+        return new Tariff(steps);
+    }
+
+    /// <summary>
+    /// Creates a tiered tariff with the standard 3-tier structure for water/sanitation.
+    /// Tier 1: 0-6 units
+    /// Tier 2: 7-15 units
+    /// Tier 3: 16+ units
+    /// </summary>
+    public static Tariff CreateTiered(decimal tier1Rate, decimal tier2Rate, decimal tier3Rate)
+    {
+        if (tier1Rate < 0)
+            throw new ArgumentException("Tier 1 rate cannot be negative.", nameof(tier1Rate));
+        if (tier2Rate < 0)
+            throw new ArgumentException("Tier 2 rate cannot be negative.", nameof(tier2Rate));
+        if (tier3Rate < 0)
+            throw new ArgumentException("Tier 3 rate cannot be negative.", nameof(tier3Rate));
+
+        var steps = new List<TariffStep>
+        {
+            TariffStep.Create(6, tier1Rate),
+            TariffStep.Create(15, tier2Rate),
+            TariffStep.Create(double.MaxValue, tier3Rate)
+        };
+
+        return new Tariff(steps);
+    }
+
+    /// <summary>
+    /// Creates a tariff from a list of steps.
+    /// </summary>
+    public static Tariff Create(IEnumerable<TariffStep> steps)
+    {
+        var stepsList = steps.ToList();
+
+        if (stepsList.Count == 0)
+            throw new ArgumentException("Tariff must have at least one step.", nameof(steps));
+
+        // Ensure steps are ordered by upper limit
+        var orderedSteps = stepsList.OrderBy(s => s.UpperLimit).ToList();
+
+        return new Tariff(orderedSteps);
+    }
+}
