@@ -56,39 +56,37 @@ import { Bill } from '../core/models/bill.model';
             <p-select
               id="filterProperty"
               [options]="propertyFilterOptions()"
-              [(ngModel)]="filterPropertyId"
+              [ngModel]="filterPropertyId()"
+              (ngModelChange)="filterPropertyId.set($event)"
               optionLabel="label"
               optionValue="value"
               placeholder="All properties"
               styleClass="w-full"
               [showClear]="true"
-              (onChange)="applyFilters()"
             />
           </div>
           <div class="flex flex-col gap-2">
             <label for="filterStartDate" class="font-medium text-sm">From Date</label>
             <p-datepicker
               id="filterStartDate"
-              [(ngModel)]="filterStartDate"
+              [ngModel]="filterStartDate()"
+              (ngModelChange)="filterStartDate.set($event)"
               dateFormat="yy-mm-dd"
               styleClass="w-full"
               [showIcon]="true"
               [showClear]="true"
-              (onSelect)="applyFilters()"
-              (onClear)="applyFilters()"
             />
           </div>
           <div class="flex flex-col gap-2">
             <label for="filterEndDate" class="font-medium text-sm">To Date</label>
             <p-datepicker
               id="filterEndDate"
-              [(ngModel)]="filterEndDate"
+              [ngModel]="filterEndDate()"
+              (ngModelChange)="filterEndDate.set($event)"
               dateFormat="yy-mm-dd"
               styleClass="w-full"
               [showIcon]="true"
               [showClear]="true"
-              (onSelect)="applyFilters()"
-              (onClear)="applyFilters()"
             />
           </div>
         </div>
@@ -317,10 +315,10 @@ export class BillsPage implements OnInit {
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
 
-  // Filters
-  filterPropertyId: string | null = null;
-  filterStartDate: Date | null = null;
-  filterEndDate: Date | null = null;
+  // Filters (as signals for reactive computed)
+  filterPropertyId = signal<string | null>(null);
+  filterStartDate = signal<Date | null>(null);
+  filterEndDate = signal<Date | null>(null);
 
   // Detail dialog
   showDetailDialog = false;
@@ -341,19 +339,22 @@ export class BillsPage implements OnInit {
   // Filtered bills
   filteredBills = computed(() => {
     let bills = this.billService.bills();
+    const propertyId = this.filterPropertyId();
+    const startDate = this.filterStartDate();
+    const endDate = this.filterEndDate();
 
-    if (this.filterPropertyId) {
-      bills = bills.filter(b => b.propertyId === this.filterPropertyId);
+    if (propertyId) {
+      bills = bills.filter(b => b.propertyId === propertyId);
     }
 
-    if (this.filterStartDate) {
-      const startDate = this.filterStartDate.toISOString().split('T')[0];
-      bills = bills.filter(b => b.periodStart >= startDate);
+    if (startDate) {
+      const startDateStr = startDate.toISOString().split('T')[0];
+      bills = bills.filter(b => b.periodStart >= startDateStr);
     }
 
-    if (this.filterEndDate) {
-      const endDate = this.filterEndDate.toISOString().split('T')[0];
-      bills = bills.filter(b => b.periodEnd <= endDate);
+    if (endDate) {
+      const endDateStr = endDate.toISOString().split('T')[0];
+      bills = bills.filter(b => b.periodEnd <= endDateStr);
     }
 
     // Sort by period end date descending (most recent first)
@@ -376,10 +377,6 @@ export class BillsPage implements OnInit {
 
   async loadBills(): Promise<void> {
     await this.billService.loadBills();
-  }
-
-  applyFilters(): void {
-    // Filters are applied via computed signal, this just triggers reactivity
   }
 
   getPropertyName(propertyId: string): string {
