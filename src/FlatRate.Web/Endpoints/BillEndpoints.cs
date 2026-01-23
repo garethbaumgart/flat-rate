@@ -3,6 +3,7 @@ using FlatRate.Application.Bills.Commands.CreateBill;
 using FlatRate.Application.Bills.Commands.DeleteBill;
 using FlatRate.Application.Bills.Queries.GetAllBills;
 using FlatRate.Application.Bills.Queries.GetBillById;
+using FlatRate.Web.Services;
 using MediatR;
 
 namespace FlatRate.Web.Endpoints;
@@ -16,6 +17,7 @@ public static class BillEndpoints
 
         group.MapGet("/", GetAll);
         group.MapGet("/{id:guid}", GetById);
+        group.MapGet("/{id:guid}/pdf", DownloadPdf);
         group.MapPost("/", Create);
         group.MapDelete("/{id:guid}", Delete);
     }
@@ -33,6 +35,23 @@ public static class BillEndpoints
         return bill is null
             ? Results.NotFound(new { error = "Bill not found" })
             : Results.Ok(bill);
+    }
+
+    private static async Task<IResult> DownloadPdf(
+        Guid id,
+        IMediator mediator,
+        InvoicePdfService pdfService,
+        CancellationToken cancellationToken)
+    {
+        var bill = await mediator.Send(new GetBillByIdQuery(id), cancellationToken);
+
+        if (bill is null)
+        {
+            return Results.NotFound(new { error = "Bill not found" });
+        }
+
+        var pdfBytes = await pdfService.GenerateInvoicePdfAsync(bill, cancellationToken);
+        return Results.File(pdfBytes, "application/pdf", $"Invoice-{bill.InvoiceNumber}.pdf");
     }
 
     private static async Task<IResult> Create(CreateBillRequest request, IMediator mediator, CancellationToken cancellationToken)

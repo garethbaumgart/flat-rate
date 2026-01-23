@@ -2,6 +2,8 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } 
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
@@ -295,12 +297,21 @@ import { Bill } from '../core/models/bill.model';
         </div>
       }
       <ng-template pTemplate="footer">
-        <p-button
-          label="Close"
-          icon="pi pi-times"
-          [text]="true"
-          (onClick)="closeDetailDialog()"
-        />
+        <div class="flex justify-between w-full">
+          <p-button
+            label="Download PDF"
+            icon="pi pi-file-pdf"
+            severity="secondary"
+            [loading]="downloadingPdf()"
+            (onClick)="downloadPdf()"
+          />
+          <p-button
+            label="Close"
+            icon="pi pi-times"
+            [text]="true"
+            (onClick)="closeDetailDialog()"
+          />
+        </div>
       </ng-template>
     </p-dialog>
 
@@ -314,6 +325,7 @@ export class BillsPage implements OnInit {
   readonly billService = inject(BillService);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly http = inject(HttpClient);
 
   // Filters (as signals for reactive computed)
   filterPropertyId = signal<string | null>(null);
@@ -323,6 +335,7 @@ export class BillsPage implements OnInit {
   // Detail dialog
   showDetailDialog = false;
   selectedBill = signal<Bill | null>(null);
+  downloadingPdf = signal(false);
 
   // Property map for quick lookups
   private propertyMap = signal<Map<string, string>>(new Map());
@@ -401,6 +414,41 @@ export class BillsPage implements OnInit {
   closeDetailDialog(): void {
     this.showDetailDialog = false;
     this.selectedBill.set(null);
+  }
+
+  async downloadPdf(): Promise<void> {
+    const bill = this.selectedBill();
+    if (!bill) return;
+
+    this.downloadingPdf.set(true);
+
+    try {
+      const blob = await firstValueFrom(
+        this.http.get(`/api/bills/${bill.id}/pdf`, { responseType: 'blob' })
+      );
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Invoice-${bill.invoiceNumber}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'PDF downloaded successfully.'
+      });
+    } catch {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to download PDF.'
+      });
+    } finally {
+      this.downloadingPdf.set(false);
+    }
   }
 
   confirmDelete(bill: Bill): void {
