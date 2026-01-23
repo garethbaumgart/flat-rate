@@ -163,7 +163,7 @@ public class TariffTests
         var steps = new[]
         {
             TariffStep.Create(10, 5m),
-            TariffStep.Create(20, 10m)
+            TariffStep.Create(decimal.MaxValue, 10m)
         };
 
         // Act
@@ -179,7 +179,7 @@ public class TariffTests
         // Arrange
         var steps = new[]
         {
-            TariffStep.Create(20, 10m),
+            TariffStep.Create(decimal.MaxValue, 10m),
             TariffStep.Create(10, 5m)
         };
 
@@ -188,7 +188,7 @@ public class TariffTests
 
         // Assert
         tariff.Steps[0].UpperLimit.Should().Be(10);
-        tariff.Steps[1].UpperLimit.Should().Be(20);
+        tariff.Steps[1].UpperLimit.Should().Be(decimal.MaxValue);
     }
 
     [Fact]
@@ -210,6 +210,70 @@ public class TariffTests
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void Create_WithDuplicateUpperLimits_ThrowsArgumentException()
+    {
+        // Arrange
+        var steps = new[]
+        {
+            TariffStep.Create(10, 5m),
+            TariffStep.Create(10, 7m),
+            TariffStep.Create(decimal.MaxValue, 10m)
+        };
+
+        // Act
+        var act = () => Tariff.Create(steps);
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*Tariff steps cannot have duplicate upper limits*");
+    }
+
+    [Fact]
+    public void Create_WithoutInfiniteFinalTier_ThrowsArgumentException()
+    {
+        // Arrange
+        var steps = new[]
+        {
+            TariffStep.Create(10, 5m),
+            TariffStep.Create(20, 10m)
+        };
+
+        // Act
+        var act = () => Tariff.Create(steps);
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*Final tariff step must have an unlimited upper limit*");
+    }
+
+    #endregion
+
+    #region Tier Boundary Constants Tests
+
+    [Fact]
+    public void Tier1UpperLimit_Is6()
+    {
+        Tariff.Tier1UpperLimit.Should().Be(6m);
+    }
+
+    [Fact]
+    public void Tier2UpperLimit_Is15()
+    {
+        Tariff.Tier2UpperLimit.Should().Be(15m);
+    }
+
+    [Fact]
+    public void CreateTiered_UsesTierConstants()
+    {
+        // Arrange & Act
+        var tariff = Tariff.CreateTiered(20.80m, 34.20m, 48.50m);
+
+        // Assert
+        tariff.Steps[0].UpperLimit.Should().Be(Tariff.Tier1UpperLimit);
+        tariff.Steps[1].UpperLimit.Should().Be(Tariff.Tier2UpperLimit);
     }
 
     #endregion

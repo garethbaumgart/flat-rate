@@ -263,6 +263,46 @@ public class BillTests
         act.Should().Throw<ArgumentNullException>();
     }
 
+    [Fact]
+    public void Create_WithNullWaterTariff_ThrowsArgumentNullException()
+    {
+        // Arrange & Act
+        var act = () => Bill.Create(
+            "UTIL-0001",
+            _propertyId,
+            _periodStart,
+            _periodEnd,
+            CreateElectricityReading(),
+            CreateWaterReading(),
+            CreateSanitationReading(),
+            CreateElectricityTariff(),
+            null!,
+            CreateSanitationTariff());
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void Create_WithNullSanitationTariff_ThrowsArgumentNullException()
+    {
+        // Arrange & Act
+        var act = () => Bill.Create(
+            "UTIL-0001",
+            _propertyId,
+            _periodStart,
+            _periodEnd,
+            CreateElectricityReading(),
+            CreateWaterReading(),
+            CreateSanitationReading(),
+            CreateElectricityTariff(),
+            CreateWaterTariff(),
+            null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
     #endregion
 
     #region Readings and Tariffs
@@ -355,6 +395,38 @@ public class BillTests
         bill.Subtotal.Should().Be(0m);
         bill.VatAmount.Should().Be(0m);
         bill.Total.Should().Be(0m);
+    }
+
+    #endregion
+
+    #region Recalculate Tests
+
+    [Fact]
+    public void Recalculate_RecalculatesCostsFromCurrentReadingsAndTariffs()
+    {
+        // Arrange
+        var bill = Bill.Create(
+            "UTIL-0001",
+            _propertyId,
+            _periodStart,
+            _periodEnd,
+            CreateElectricityReading(),
+            CreateWaterReading(),
+            CreateSanitationReading(),
+            CreateElectricityTariff(),
+            CreateWaterTariff(),
+            CreateSanitationTariff());
+
+        var originalTotal = bill.Total;
+
+        // Act
+        bill.Recalculate();
+
+        // Assert - costs should remain the same when recalculated with same data
+        bill.ElectricityCost.Should().Be(442.00m);
+        bill.WaterCost.Should().Be(193.20m);
+        bill.SanitationCost.Should().Be(194.00m);
+        bill.Total.Should().Be(originalTotal);
     }
 
     #endregion

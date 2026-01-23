@@ -55,7 +55,7 @@ public class BillingCalculatorTests
     public void CalculateElectricityCost_WithValidTariff_DoesNotThrow()
     {
         // Arrange
-        var tariff = Tariff.Create(new[] { TariffStep.Create(10, 5m) });
+        var tariff = Tariff.Create(new[] { TariffStep.Create(decimal.MaxValue, 5m) });
 
         // Act
         var act = () => BillingCalculator.CalculateElectricityCost(100, tariff);

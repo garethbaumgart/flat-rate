@@ -6,6 +6,16 @@ namespace FlatRate.Domain.ValueObjects;
 /// </summary>
 public sealed record Tariff
 {
+    /// <summary>
+    /// Standard tier 1 upper limit (0-6 kL).
+    /// </summary>
+    public const decimal Tier1UpperLimit = 6m;
+
+    /// <summary>
+    /// Standard tier 2 upper limit (7-15 kL).
+    /// </summary>
+    public const decimal Tier2UpperLimit = 15m;
+
     public IReadOnlyList<TariffStep> Steps { get; }
 
     private Tariff(IReadOnlyList<TariffStep> steps)
@@ -46,8 +56,8 @@ public sealed record Tariff
 
         var steps = new List<TariffStep>
         {
-            TariffStep.Create(6, tier1Rate),
-            TariffStep.Create(15, tier2Rate),
+            TariffStep.Create(Tier1UpperLimit, tier1Rate),
+            TariffStep.Create(Tier2UpperLimit, tier2Rate),
             TariffStep.Create(decimal.MaxValue, tier3Rate)
         };
 
@@ -56,6 +66,7 @@ public sealed record Tariff
 
     /// <summary>
     /// Creates a tariff from a list of steps.
+    /// The final step must have an upper limit of decimal.MaxValue to ensure all units are billed.
     /// </summary>
     public static Tariff Create(IEnumerable<TariffStep> steps)
     {
@@ -68,6 +79,15 @@ public sealed record Tariff
 
         // Ensure steps are ordered by upper limit
         var orderedSteps = stepsList.OrderBy(s => s.UpperLimit).ToList();
+
+        // Check for duplicate upper limits
+        var upperLimits = orderedSteps.Select(s => s.UpperLimit).ToList();
+        if (upperLimits.Distinct().Count() != upperLimits.Count)
+            throw new ArgumentException("Tariff steps cannot have duplicate upper limits.", nameof(steps));
+
+        // Ensure final tier covers unlimited usage to prevent unbilled units
+        if (orderedSteps[^1].UpperLimit != decimal.MaxValue)
+            throw new ArgumentException("Final tariff step must have an unlimited upper limit (decimal.MaxValue) to ensure all units are billed.", nameof(steps));
 
         return new Tariff(orderedSteps);
     }
