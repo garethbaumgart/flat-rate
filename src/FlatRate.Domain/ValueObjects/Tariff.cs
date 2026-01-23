@@ -16,11 +16,16 @@ public sealed record Tariff
     /// </summary>
     public const decimal Tier2UpperLimit = 15m;
 
-    public IReadOnlyList<TariffStep> Steps { get; }
+    private readonly TariffStep[] _steps;
 
-    private Tariff(IReadOnlyList<TariffStep> steps)
+    /// <summary>
+    /// Gets the tariff steps. Returns a defensive copy to prevent external mutation.
+    /// </summary>
+    public IReadOnlyList<TariffStep> Steps => _steps.ToArray();
+
+    private Tariff(TariffStep[] steps)
     {
-        Steps = steps;
+        _steps = steps;
     }
 
     /// <summary>
@@ -31,7 +36,7 @@ public sealed record Tariff
         if (rate < 0)
             throw new ArgumentException("Rate cannot be negative.", nameof(rate));
 
-        var steps = new List<TariffStep>
+        var steps = new[]
         {
             TariffStep.Create(decimal.MaxValue, rate)
         };
@@ -54,7 +59,7 @@ public sealed record Tariff
         if (tier3Rate < 0)
             throw new ArgumentException("Tier 3 rate cannot be negative.", nameof(tier3Rate));
 
-        var steps = new List<TariffStep>
+        var steps = new[]
         {
             TariffStep.Create(Tier1UpperLimit, tier1Rate),
             TariffStep.Create(Tier2UpperLimit, tier2Rate),
@@ -89,6 +94,6 @@ public sealed record Tariff
         if (orderedSteps[^1].UpperLimit != decimal.MaxValue)
             throw new ArgumentException("Final tariff step must have an unlimited upper limit (decimal.MaxValue) to ensure all units are billed.", nameof(steps));
 
-        return new Tariff(orderedSteps);
+        return new Tariff(orderedSteps.ToArray());
     }
 }
