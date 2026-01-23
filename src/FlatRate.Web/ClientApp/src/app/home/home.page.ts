@@ -1,15 +1,28 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [ButtonModule],
+  imports: [ButtonModule, RouterLink],
   template: `
     <div class="flex flex-col items-center justify-center min-h-screen p-8">
       <h1 class="text-4xl font-bold text-gray-900 mb-4">FlatRate</h1>
       <p class="text-lg text-gray-600 mb-8">Monthly utility billing for rental properties</p>
-      <p-button label="Get Started" icon="pi pi-arrow-right" iconPos="right" />
+      <div class="flex gap-4">
+        <p-button
+          label="Manage Properties"
+          icon="pi pi-building"
+          routerLink="/properties"
+        />
+        <p-button
+          label="View Bills"
+          icon="pi pi-file"
+          severity="secondary"
+          [disabled]="true"
+        />
+      </div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
