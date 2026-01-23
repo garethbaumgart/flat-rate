@@ -74,7 +74,7 @@ public class TariffTests
         // Assert
         tariff.Steps.Should().HaveCount(1);
         tariff.Steps[0].Rate.Should().Be(3.40m);
-        tariff.Steps[0].UpperLimit.Should().Be(double.MaxValue);
+        tariff.Steps[0].UpperLimit.Should().Be(decimal.MaxValue);
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public class TariffTests
         tariff.Steps[0].Rate.Should().Be(20.80m);
         tariff.Steps[1].UpperLimit.Should().Be(15);
         tariff.Steps[1].Rate.Should().Be(34.20m);
-        tariff.Steps[2].UpperLimit.Should().Be(double.MaxValue);
+        tariff.Steps[2].UpperLimit.Should().Be(decimal.MaxValue);
         tariff.Steps[2].Rate.Should().Be(48.50m);
     }
 
@@ -200,6 +200,16 @@ public class TariffTests
         // Assert
         act.Should().Throw<ArgumentException>()
             .WithMessage("*Tariff must have at least one step*");
+    }
+
+    [Fact]
+    public void Create_WithNullSteps_ThrowsArgumentNullException()
+    {
+        // Arrange & Act
+        var act = () => Tariff.Create(null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
     }
 
     #endregion

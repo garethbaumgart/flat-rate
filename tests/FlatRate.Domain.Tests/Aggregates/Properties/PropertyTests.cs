@@ -280,6 +280,34 @@ public class PropertyTests
             .WithMessage("*Tier 1 rate cannot be negative*");
     }
 
+    [Fact]
+    public void SetDefaultSanitationRates_WithNegativeTier2_ThrowsArgumentException()
+    {
+        // Arrange
+        var property = Property.Create("Flat 1", "123 Main Street");
+
+        // Act
+        var act = () => property.SetDefaultSanitationRates(25.50m, -1, 29.80m);
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*Tier 2 rate cannot be negative*");
+    }
+
+    [Fact]
+    public void SetDefaultSanitationRates_WithNegativeTier3_ThrowsArgumentException()
+    {
+        // Arrange
+        var property = Property.Create("Flat 1", "123 Main Street");
+
+        // Act
+        var act = () => property.SetDefaultSanitationRates(25.50m, 20.50m, -1);
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*Tier 3 rate cannot be negative*");
+    }
+
     #endregion
 
     #region ClearDefaultRates Tests

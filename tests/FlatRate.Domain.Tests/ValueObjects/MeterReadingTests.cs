@@ -11,8 +11,8 @@ public class MeterReadingTests
     public void Create_WithValidReadings_ReturnsMeterReading()
     {
         // Arrange
-        var opening = 100.0;
-        var closing = 150.0;
+        var opening = 100m;
+        var closing = 150m;
 
         // Act
         var reading = MeterReading.Create(opening, closing);
@@ -92,7 +92,7 @@ public class MeterReadingTests
     [InlineData(222, 230, 8)]
     [InlineData(0, 0, 0)]
     [InlineData(100, 100, 0)]
-    public void UnitsUsed_ReturnsCorrectValue(double opening, double closing, double expected)
+    public void UnitsUsed_ReturnsCorrectValue(int opening, int closing, int expected)
     {
         // Arrange
         var reading = MeterReading.Create(opening, closing);

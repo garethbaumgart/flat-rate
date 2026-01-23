@@ -21,7 +21,7 @@ public class BillingCalculatorTests
         var tariff = Tariff.CreateFlatRate(rate);
 
         // Act
-        var cost = BillingCalculator.CalculateElectricityCost(unitsUsed, tariff);
+        var cost = BillingCalculator.CalculateElectricityCost((decimal)unitsUsed, tariff);
 
         // Assert
         cost.Should().Be(expectedCost);
@@ -42,16 +42,25 @@ public class BillingCalculatorTests
     }
 
     [Fact]
-    public void CalculateElectricityCost_WithEmptyTariff_ThrowsArgumentException()
+    public void CalculateElectricityCost_WithNullTariff_ThrowsArgumentNullException()
+    {
+        // Arrange & Act
+        var act = () => BillingCalculator.CalculateElectricityCost(100, null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void CalculateElectricityCost_WithValidTariff_DoesNotThrow()
     {
         // Arrange
         var tariff = Tariff.Create(new[] { TariffStep.Create(10, 5m) });
-        // Remove steps to simulate empty (can't actually do this, so test with valid tariff)
 
-        // This test validates the tariff has steps - CreateFlatRate always has one step
+        // Act
         var act = () => BillingCalculator.CalculateElectricityCost(100, tariff);
 
-        // Assert - should not throw with valid tariff
+        // Assert
         act.Should().NotThrow();
     }
 
@@ -76,7 +85,7 @@ public class BillingCalculatorTests
     [InlineData(1, 20.80)]      // 1 unit at tier 1
     [InlineData(6, 124.80)]     // 6 units at tier 1: 6 × 20.80 = 124.80
     public void CalculateTieredCost_WithinTier1_ReturnsCorrectCost(
-        double unitsUsed, decimal expectedCost)
+        int unitsUsed, decimal expectedCost)
     {
         // Arrange
         var tariff = Tariff.CreateTiered(20.80m, 34.20m, 48.50m);
@@ -182,6 +191,16 @@ public class BillingCalculatorTests
         // Assert
         act.Should().Throw<ArgumentException>()
             .WithMessage("*Units used cannot be negative*");
+    }
+
+    [Fact]
+    public void CalculateTieredCost_WithNullTariff_ThrowsArgumentNullException()
+    {
+        // Arrange & Act
+        var act = () => BillingCalculator.CalculateTieredCost(8, null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
     }
 
     #endregion

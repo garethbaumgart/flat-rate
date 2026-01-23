@@ -2,20 +2,21 @@ namespace FlatRate.Domain.ValueObjects;
 
 /// <summary>
 /// Represents a meter reading with opening and closing values.
+/// Uses decimal for precision in financial calculations.
 /// </summary>
 public sealed record MeterReading
 {
-    public double Opening { get; }
-    public double Closing { get; }
-    public double UnitsUsed => Closing - Opening;
+    public decimal Opening { get; }
+    public decimal Closing { get; }
+    public decimal UnitsUsed => Closing - Opening;
 
-    private MeterReading(double opening, double closing)
+    private MeterReading(decimal opening, decimal closing)
     {
         Opening = opening;
         Closing = closing;
     }
 
-    public static MeterReading Create(double opening, double closing)
+    public static MeterReading Create(decimal opening, decimal closing)
     {
         if (opening < 0)
             throw new ArgumentException("Opening reading cannot be negative.", nameof(opening));

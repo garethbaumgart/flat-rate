@@ -18,8 +18,10 @@ public static class BillingCalculator
     /// <param name="unitsUsed">Units consumed in kWh.</param>
     /// <param name="tariff">The electricity tariff (flat rate).</param>
     /// <returns>The total cost before VAT.</returns>
-    public static decimal CalculateElectricityCost(double unitsUsed, Tariff tariff)
+    public static decimal CalculateElectricityCost(decimal unitsUsed, Tariff tariff)
     {
+        ArgumentNullException.ThrowIfNull(tariff);
+
         if (unitsUsed < 0)
             throw new ArgumentException("Units used cannot be negative.", nameof(unitsUsed));
 
@@ -28,7 +30,7 @@ public static class BillingCalculator
 
         // For electricity, we use flat rate (first step)
         var rate = tariff.Steps[0].Rate;
-        return (decimal)unitsUsed * rate;
+        return unitsUsed * rate;
     }
 
     /// <summary>
@@ -40,8 +42,10 @@ public static class BillingCalculator
     /// <param name="unitsUsed">Units consumed in kL.</param>
     /// <param name="tariff">The tiered tariff.</param>
     /// <returns>The total cost before VAT.</returns>
-    public static decimal CalculateTieredCost(double unitsUsed, Tariff tariff)
+    public static decimal CalculateTieredCost(decimal unitsUsed, Tariff tariff)
     {
+        ArgumentNullException.ThrowIfNull(tariff);
+
         if (unitsUsed < 0)
             throw new ArgumentException("Units used cannot be negative.", nameof(unitsUsed));
 
@@ -50,9 +54,10 @@ public static class BillingCalculator
 
         var remainingUnits = unitsUsed;
         var totalCost = 0m;
-        var previousLimit = 0.0;
+        var previousLimit = 0m;
 
-        foreach (var step in tariff.Steps.OrderBy(s => s.UpperLimit))
+        // Steps are already ordered by Tariff.Create
+        foreach (var step in tariff.Steps)
         {
             if (remainingUnits <= 0)
                 break;
@@ -61,7 +66,7 @@ public static class BillingCalculator
             var tierCapacity = step.UpperLimit - previousLimit;
             var unitsInTier = Math.Min(remainingUnits, tierCapacity);
 
-            totalCost += (decimal)unitsInTier * step.Rate;
+            totalCost += unitsInTier * step.Rate;
             remainingUnits -= unitsInTier;
             previousLimit = step.UpperLimit;
         }

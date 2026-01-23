@@ -2,6 +2,7 @@ namespace FlatRate.Domain.ValueObjects;
 
 /// <summary>
 /// Represents a tariff structure with one or more steps/tiers.
+/// Uses decimal for precision in financial calculations.
 /// </summary>
 public sealed record Tariff
 {
@@ -22,7 +23,7 @@ public sealed record Tariff
 
         var steps = new List<TariffStep>
         {
-            TariffStep.Create(double.MaxValue, rate)
+            TariffStep.Create(decimal.MaxValue, rate)
         };
 
         return new Tariff(steps);
@@ -47,7 +48,7 @@ public sealed record Tariff
         {
             TariffStep.Create(6, tier1Rate),
             TariffStep.Create(15, tier2Rate),
-            TariffStep.Create(double.MaxValue, tier3Rate)
+            TariffStep.Create(decimal.MaxValue, tier3Rate)
         };
 
         return new Tariff(steps);
@@ -58,6 +59,8 @@ public sealed record Tariff
     /// </summary>
     public static Tariff Create(IEnumerable<TariffStep> steps)
     {
+        ArgumentNullException.ThrowIfNull(steps);
+
         var stepsList = steps.ToList();
 
         if (stepsList.Count == 0)
