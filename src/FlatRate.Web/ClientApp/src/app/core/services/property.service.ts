@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import {
   Property,
@@ -144,20 +144,21 @@ export class PropertyService {
   }
 
   private getErrorMessage(error: unknown): string {
-    if (error && typeof error === 'object') {
-      const err = error as { error?: { error?: string }; message?: string; status?: number };
-
-      if (err.status === 401) {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 401) {
         return 'Please log in to continue.';
       }
 
-      if (err.error?.error) {
-        return err.error.error;
+      if (error.status === 0) {
+        return 'Unable to connect to server. Please check your connection.';
       }
 
-      if (err.message) {
-        return err.message;
+      // Handle API error responses with { error: "message" } format
+      if (error.error?.error && typeof error.error.error === 'string') {
+        return error.error.error;
       }
+
+      return error.message || 'An unexpected error occurred.';
     }
 
     return 'An unexpected error occurred.';

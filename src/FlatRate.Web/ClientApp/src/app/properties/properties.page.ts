@@ -78,7 +78,7 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
             [value]="propertyService.properties()"
             styleClass="p-datatable-sm"
           >
-            <ng-template #header>
+            <ng-template pTemplate="header">
               <tr>
                 <th>Name</th>
                 <th class="hidden md:table-cell">Address</th>
@@ -86,7 +86,7 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
                 <th class="text-right">Actions</th>
               </tr>
             </ng-template>
-            <ng-template #body let-property>
+            <ng-template pTemplate="body" let-property>
               <tr>
                 <td>
                   <div class="font-medium">{{ property.name }}</div>
@@ -112,6 +112,7 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
                       [text]="true"
                       severity="secondary"
                       pTooltip="Edit"
+                      ariaLabel="Edit property"
                       (onClick)="openEditDialog(property)"
                     />
                     <p-button
@@ -120,6 +121,7 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
                       [text]="true"
                       severity="secondary"
                       pTooltip="Set Rates"
+                      ariaLabel="Set rates for property"
                       (onClick)="openRatesDialog(property)"
                     />
                     <p-button
@@ -128,6 +130,7 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
                       [text]="true"
                       severity="danger"
                       pTooltip="Delete"
+                      ariaLabel="Delete property"
                       (onClick)="confirmDelete(property)"
                     />
                   </div>
@@ -337,7 +340,12 @@ export class PropertiesPage implements OnInit {
 
   hasDefaultRates(property: Property): boolean {
     return property.defaultElectricityRate !== null ||
-           property.defaultWaterRateTier1 !== null;
+           property.defaultWaterRateTier1 !== null ||
+           property.defaultWaterRateTier2 !== null ||
+           property.defaultWaterRateTier3 !== null ||
+           property.defaultSanitationRateTier1 !== null ||
+           property.defaultSanitationRateTier2 !== null ||
+           property.defaultSanitationRateTier3 !== null;
   }
 
   openCreateDialog(): void {
