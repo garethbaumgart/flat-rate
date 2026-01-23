@@ -1,12 +1,17 @@
+using FlatRate.Application;
 using FlatRate.Infrastructure;
 using FlatRate.Infrastructure.Persistence;
 using FlatRate.Web.Auth;
+using FlatRate.Web.Endpoints;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Application services (MediatR handlers)
+builder.Services.AddApplication();
 
 // Add Infrastructure services (EF Core, repositories)
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -64,6 +69,10 @@ app.UseAuthorization();
 
 // Health check endpoint (no auth required)
 app.MapGet("/api/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
+// API endpoints
+app.MapPropertyEndpoints();
+app.MapBillEndpoints();
 
 // Auth endpoints
 app.MapGet("/api/auth/login", (HttpContext context) =>
