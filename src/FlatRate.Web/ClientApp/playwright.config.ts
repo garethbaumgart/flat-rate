@@ -15,7 +15,7 @@ export default defineConfig({
     : 'html',
 
   use: {
-    baseURL: 'http://localhost:5000',
+    baseURL: 'http://localhost:5297',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -28,9 +28,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'cd .. && dotnet run --no-build',
-    url: 'http://localhost:5000/api/health',
+    command: 'cd .. && dotnet run',
+    url: 'http://localhost:5297/api/health',
     reuseExistingServer: !process.env['CI'],
-    timeout: 120000,
+    timeout: 180000,
   },
 });
