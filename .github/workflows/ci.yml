@@ -64,22 +64,27 @@ jobs:
         run: npm test -- --watch=false --browsers=ChromeHeadless
         continue-on-error: true  # Tests may need additional setup
 
-      - name: Install Playwright Browsers
-        working-directory: src/FlatRate.Web/ClientApp
-        run: npx playwright install chromium --with-deps
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: build-and-test
 
-      - name: Run E2E tests
-        working-directory: src/FlatRate.Web/ClientApp
-        run: npm run e2e
-        continue-on-error: true  # E2E tests need Docker-based setup for reliable CI
-        env:
-          ConnectionStrings__DefaultConnection: Host=localhost;Database=flatrate;Username=flatrate;Password=flatrate
-          ASPNETCORE_ENVIRONMENT: Development
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create E2E results directory
+        run: mkdir -p e2e-results
+
+      - name: Run E2E tests with Docker Compose
+        run: docker compose -f docker-compose.e2e.yml up --build --abort-on-container-exit --exit-code-from e2e
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: src/FlatRate.Web/ClientApp/playwright-report/
+          path: e2e-results/
           retention-days: 30
+
+      - name: Cleanup Docker
+        if: always()
+        run: docker compose -f docker-compose.e2e.yml down -v

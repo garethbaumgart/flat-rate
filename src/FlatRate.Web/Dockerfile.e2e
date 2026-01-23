@@ -1,0 +1,35 @@
+# E2E Test API Dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY src/FlatRate.slnx ./
+COPY src/FlatRate.Domain/*.csproj FlatRate.Domain/
+COPY src/FlatRate.Application/*.csproj FlatRate.Application/
+COPY src/FlatRate.Infrastructure/*.csproj FlatRate.Infrastructure/
+COPY src/FlatRate.Web/*.csproj FlatRate.Web/
+
+# Restore dependencies
+RUN dotnet restore FlatRate.slnx
+
+# Copy source code
+COPY src/FlatRate.Domain/ FlatRate.Domain/
+COPY src/FlatRate.Application/ FlatRate.Application/
+COPY src/FlatRate.Infrastructure/ FlatRate.Infrastructure/
+COPY src/FlatRate.Web/ FlatRate.Web/
+
+# Build
+WORKDIR /src/FlatRate.Web
+RUN dotnet build -c Release -o /app/build
+
+# Publish
+RUN dotnet publish -c Release -o /app/publish
+
+# Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS runtime
+WORKDIR /app
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+COPY --from=build /app/publish .
+EXPOSE 5000
+ENV ASPNETCORE_URLS=http://+:5000
+ENTRYPOINT ["dotnet", "FlatRate.Web.dll"]

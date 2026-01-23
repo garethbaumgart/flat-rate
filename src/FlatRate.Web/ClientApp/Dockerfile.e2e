@@ -1,0 +1,20 @@
+# E2E Test Runner Dockerfile
+FROM mcr.microsoft.com/playwright:v1.58.0-jammy
+
+WORKDIR /app
+
+# Copy package files
+COPY src/FlatRate.Web/ClientApp/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy test files and config
+COPY src/FlatRate.Web/ClientApp/playwright.config.ts ./
+COPY src/FlatRate.Web/ClientApp/e2e/ ./e2e/
+
+# Create output directories
+RUN mkdir -p playwright-report test-results
+
+# Run tests
+CMD ["npx", "playwright", "test"]
