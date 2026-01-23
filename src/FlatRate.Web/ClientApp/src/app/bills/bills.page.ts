@@ -424,7 +424,7 @@ export class BillsPage implements OnInit {
 
     try {
       const blob = await firstValueFrom(
-        this.http.get(`/api/bills/${bill.id}/pdf`, { responseType: 'blob' })
+        this.http.get(`/api/bills/${bill.id}/pdf`, { responseType: 'blob' as const })
       );
 
       // Create download link

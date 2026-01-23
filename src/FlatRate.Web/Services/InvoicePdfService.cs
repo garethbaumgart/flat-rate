@@ -14,10 +14,14 @@ public sealed class InvoicePdfService
 {
     private readonly IMediator _mediator;
 
+    static InvoicePdfService()
+    {
+        QuestPDF.Settings.License = LicenseType.Community;
+    }
+
     public InvoicePdfService(IMediator mediator)
     {
         _mediator = mediator;
-        QuestPDF.Settings.License = LicenseType.Community;
     }
 
     public async Task<byte[]> GenerateInvoicePdfAsync(BillDto bill, CancellationToken cancellationToken)
