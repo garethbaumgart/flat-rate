@@ -73,6 +73,7 @@ jobs:
         run: npm run e2e
         env:
           ConnectionStrings__DefaultConnection: Host=localhost;Database=flatrate;Username=flatrate;Password=flatrate
+          ASPNETCORE_ENVIRONMENT: Development
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4

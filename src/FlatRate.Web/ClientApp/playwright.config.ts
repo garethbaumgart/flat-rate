@@ -32,5 +32,8 @@ export default defineConfig({
     url: 'http://localhost:5297/api/health',
     reuseExistingServer: !process.env['CI'],
     timeout: 180000,
+    env: {
+      ASPNETCORE_ENVIRONMENT: 'Development',
+    },
   },
 });
