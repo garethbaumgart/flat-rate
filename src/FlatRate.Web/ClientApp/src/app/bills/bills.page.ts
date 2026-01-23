@@ -2,8 +2,6 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } 
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
@@ -325,7 +323,6 @@ export class BillsPage implements OnInit {
   readonly billService = inject(BillService);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
-  private readonly http = inject(HttpClient);
 
   // Filters (as signals for reactive computed)
   filterPropertyId = signal<string | null>(null);
@@ -423,17 +420,22 @@ export class BillsPage implements OnInit {
     this.downloadingPdf.set(true);
 
     try {
-      const blob = await firstValueFrom(
-        this.http.get(`/api/bills/${bill.id}/pdf`, { responseType: 'blob' as const })
-      );
+      const blob = await this.billService.getInvoicePdfBlob(bill.id);
 
-      // Create download link
+      // Create download link and append to DOM for browser compatibility
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `Invoice-${bill.invoiceNumber}.pdf`;
+      document.body.appendChild(link);
       link.click();
-      window.URL.revokeObjectURL(url);
+
+      // Clean up the link element and object URL asynchronously to avoid
+      // cancelling the download in some browsers.
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 0);
 
       this.messageService.add({
         severity: 'success',

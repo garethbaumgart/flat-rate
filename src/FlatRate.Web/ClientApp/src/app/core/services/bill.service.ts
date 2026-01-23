@@ -111,6 +111,16 @@ export class BillService {
   }
 
   /**
+   * Download invoice PDF for a bill.
+   * Returns a Blob that can be used to create a download link.
+   */
+  async getInvoicePdfBlob(id: string): Promise<Blob> {
+    return firstValueFrom(
+      this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' as const })
+    );
+  }
+
+  /**
    * Calculate a live preview of the bill based on meter readings and rates.
    * This mirrors the backend BillingCalculator logic for instant feedback.
    */
