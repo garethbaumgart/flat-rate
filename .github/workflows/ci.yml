@@ -63,3 +63,21 @@ jobs:
         working-directory: src/FlatRate.Web/ClientApp
         run: npm test -- --watch=false --browsers=ChromeHeadless
         continue-on-error: true  # Tests may need additional setup
+
+      - name: Install Playwright Browsers
+        working-directory: src/FlatRate.Web/ClientApp
+        run: npx playwright install chromium --with-deps
+
+      - name: Run E2E tests
+        working-directory: src/FlatRate.Web/ClientApp
+        run: npm run e2e
+        env:
+          ConnectionStrings__DefaultConnection: Host=localhost;Database=flatrate;Username=flatrate;Password=flatrate
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: src/FlatRate.Web/ClientApp/playwright-report/
+          retention-days: 30
