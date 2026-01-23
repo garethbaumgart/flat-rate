@@ -179,12 +179,17 @@ export class BillService {
   ): number {
     if (units < 0) return 0;
 
+    // Clamp rates to non-negative values to avoid negative invoices
+    const safeTier1Rate = Math.max(0, tier1Rate || 0);
+    const safeTier2Rate = Math.max(0, tier2Rate || 0);
+    const safeTier3Rate = Math.max(0, tier3Rate || 0);
+
     let remaining = units;
     let cost = 0;
 
     // Tier 1: 0-6 kL
     const tier1Units = Math.min(remaining, TIER_1_LIMIT);
-    cost += tier1Units * (tier1Rate || 0);
+    cost += tier1Units * safeTier1Rate;
     remaining -= tier1Units;
 
     if (remaining <= 0) return cost;
@@ -192,13 +197,13 @@ export class BillService {
     // Tier 2: 7-15 kL (9 more kL)
     const tier2Capacity = TIER_2_LIMIT - TIER_1_LIMIT;
     const tier2Units = Math.min(remaining, tier2Capacity);
-    cost += tier2Units * (tier2Rate || 0);
+    cost += tier2Units * safeTier2Rate;
     remaining -= tier2Units;
 
     if (remaining <= 0) return cost;
 
     // Tier 3: 16+ kL (remaining)
-    cost += remaining * (tier3Rate || 0);
+    cost += remaining * safeTier3Rate;
 
     return cost;
   }

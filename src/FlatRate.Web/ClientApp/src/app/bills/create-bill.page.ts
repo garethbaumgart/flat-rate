@@ -229,6 +229,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
                 id="elecRate"
                 [(ngModel)]="electricityRate"
                 name="elecRate"
+                [min]="0"
                 [minFractionDigits]="2"
                 [maxFractionDigits]="4"
                 prefix="R "
@@ -244,6 +245,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
                 id="waterTier1"
                 [(ngModel)]="waterRateTier1"
                 name="waterTier1"
+                [min]="0"
                 [minFractionDigits]="2"
                 [maxFractionDigits]="4"
                 prefix="R "
@@ -257,6 +259,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
                 id="waterTier2"
                 [(ngModel)]="waterRateTier2"
                 name="waterTier2"
+                [min]="0"
                 [minFractionDigits]="2"
                 [maxFractionDigits]="4"
                 prefix="R "
@@ -270,6 +273,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
                 id="waterTier3"
                 [(ngModel)]="waterRateTier3"
                 name="waterTier3"
+                [min]="0"
                 [minFractionDigits]="2"
                 [maxFractionDigits]="4"
                 prefix="R "
@@ -285,6 +289,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
                 id="sanitationTier1"
                 [(ngModel)]="sanitationRateTier1"
                 name="sanitationTier1"
+                [min]="0"
                 [minFractionDigits]="2"
                 [maxFractionDigits]="4"
                 prefix="R "
@@ -298,6 +303,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
                 id="sanitationTier2"
                 [(ngModel)]="sanitationRateTier2"
                 name="sanitationTier2"
+                [min]="0"
                 [minFractionDigits]="2"
                 [maxFractionDigits]="4"
                 prefix="R "
@@ -311,6 +317,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
                 id="sanitationTier3"
                 [(ngModel)]="sanitationRateTier3"
                 name="sanitationTier3"
+                [min]="0"
                 [minFractionDigits]="2"
                 [maxFractionDigits]="4"
                 prefix="R "
@@ -489,7 +496,13 @@ export class CreateBillPage implements OnInit {
       this.electricityClosing >= this.electricityOpening &&
       this.waterClosing >= this.waterOpening &&
       this.sanitationClosing >= this.sanitationOpening &&
-      this.electricityRate > 0
+      this.electricityRate > 0 &&
+      this.waterRateTier1 > 0 &&
+      this.waterRateTier2 > 0 &&
+      this.waterRateTier3 > 0 &&
+      this.sanitationRateTier1 > 0 &&
+      this.sanitationRateTier2 > 0 &&
+      this.sanitationRateTier3 > 0
     );
   }
 
@@ -530,8 +543,8 @@ export class CreateBillPage implements OnInit {
         summary: 'Success',
         detail: 'Bill created successfully.'
       });
-      // Navigate to bills list after a short delay
-      setTimeout(() => this.router.navigate(['/bills']), 1500);
+      // Navigate to home after a short delay (bill history will be in Issue #7)
+      setTimeout(() => this.router.navigate(['/']), 1500);
     } else {
       this.messageService.add({
         severity: 'error',
@@ -542,7 +555,7 @@ export class CreateBillPage implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/bills']);
+    this.router.navigate(['/']);
   }
 
   private formatDate(date: Date): string {

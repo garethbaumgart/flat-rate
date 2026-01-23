@@ -6,6 +6,6 @@ import { CreateBillPage } from './bills/create-bill.page';
 export const routes: Routes = [
   { path: '', component: HomePage },
   { path: 'properties', component: PropertiesPage },
-  { path: 'bills/create', component: CreateBillPage },
-  { path: 'bills', redirectTo: 'bills/create', pathMatch: 'full' }
+  { path: 'bills/create', component: CreateBillPage }
+  // Bill history route will be added in Issue #7
 ];
