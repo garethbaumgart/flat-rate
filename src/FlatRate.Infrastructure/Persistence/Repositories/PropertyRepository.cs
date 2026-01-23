@@ -24,6 +24,7 @@ public sealed class PropertyRepository : IPropertyRepository
     public async Task<IReadOnlyList<Property>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Properties
+            .AsNoTracking()
             .OrderBy(p => p.Name)
             .ToListAsync(cancellationToken);
     }
@@ -35,6 +36,8 @@ public sealed class PropertyRepository : IPropertyRepository
 
     public void Update(Property property)
     {
+        // EF Core tracks changes automatically for tracked entities
+        // This method exists for detached entity scenarios
         _context.Properties.Update(property);
     }
 
