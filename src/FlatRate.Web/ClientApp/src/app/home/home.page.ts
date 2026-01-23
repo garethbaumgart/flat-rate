@@ -17,10 +17,10 @@ import { ButtonModule } from 'primeng/button';
           routerLink="/properties"
         />
         <p-button
-          label="View Bills"
+          label="Create Bill"
           icon="pi pi-file"
           severity="secondary"
-          [disabled]="true"
+          routerLink="/bills/create"
         />
       </div>
     </div>
