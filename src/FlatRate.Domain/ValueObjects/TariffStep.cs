@@ -16,6 +16,15 @@ public sealed record TariffStep
     /// </summary>
     public decimal Rate { get; }
 
+    /// <summary>
+    /// Private parameterless constructor for EF Core materialization.
+    /// </summary>
+    private TariffStep()
+    {
+        UpperLimit = 0;
+        Rate = 0;
+    }
+
     private TariffStep(decimal upperLimit, decimal rate)
     {
         UpperLimit = upperLimit;

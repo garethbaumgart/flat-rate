@@ -47,9 +47,9 @@ test.describe('Bill Management', () => {
 
     await page.goto('/bills/create');
 
-    // Select the property (wait for it to load)
-    await page.waitForTimeout(500);
+    // Select the property (wait for it to be visible)
     const propertySelect = page.locator('p-select').first();
+    await expect(propertySelect).toBeVisible();
     await propertySelect.click();
     await page.getByText('E2E Bill Test Property').click();
 

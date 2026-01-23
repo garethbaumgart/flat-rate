@@ -23,6 +23,14 @@ public sealed record Tariff
     /// </summary>
     public IReadOnlyList<TariffStep> Steps => _steps.ToArray();
 
+    /// <summary>
+    /// Private parameterless constructor for EF Core materialization.
+    /// </summary>
+    private Tariff()
+    {
+        _steps = [];
+    }
+
     private Tariff(TariffStep[] steps)
     {
         _steps = steps;

@@ -42,11 +42,11 @@ test.describe('Critical Path: Property → Bill → PDF Export', () => {
     await test.step('Create a bill for the property', async () => {
       await page.goto('/bills/create');
 
-      // Wait for properties to load
-      await page.waitForTimeout(500);
+      // Wait for properties to load by waiting for the property select to be visible
+      const propertySelect = page.locator('p-select').first();
+      await propertySelect.waitFor({ state: 'visible' });
 
       // Select the property
-      const propertySelect = page.locator('p-select').first();
       await propertySelect.click();
       await page.getByText(`Critical Path Property ${uniqueId}`).click();
 
