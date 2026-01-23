@@ -21,10 +21,15 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<InvoicePdfService>();
 
 // Authentication setup
+var isDevelopment = builder.Environment.IsDevelopment();
+
 var authBuilder = builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    // In development, use MockAuth as the default challenge scheme (no Google redirect)
+    options.DefaultChallengeScheme = isDevelopment
+        ? MockAuthenticationOptions.Scheme
+        : GoogleDefaults.AuthenticationScheme;
 })
 .AddCookie(options =>
 {
@@ -34,7 +39,26 @@ var authBuilder = builder.Services.AddAuthentication(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    // In development, forward auth to MockAuth scheme when mock header is present
+    if (isDevelopment)
+    {
+        options.ForwardDefaultSelector = context =>
+        {
+            if (context.Request.Headers.ContainsKey(MockAuthenticationOptions.HeaderName))
+            {
+                return MockAuthenticationOptions.Scheme;
+            }
+            return null;
+        };
+    }
 });
+
+// Add mock authentication for development (must be added before Google)
+if (isDevelopment)
+{
+    authBuilder.AddScheme<MockAuthenticationOptions, MockAuthenticationHandler>(
+        MockAuthenticationOptions.Scheme, _ => { });
+}
 
 // Add Google authentication if configured
 var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
@@ -48,13 +72,6 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
         options.ClientSecret = googleClientSecret;
         options.CallbackPath = "/api/auth/google-callback";
     });
-}
-
-// Add mock authentication for development
-if (builder.Environment.IsDevelopment())
-{
-    authBuilder.AddScheme<MockAuthenticationOptions, MockAuthenticationHandler>(
-        MockAuthenticationOptions.Scheme, _ => { });
 }
 
 builder.Services.AddAuthorization();
