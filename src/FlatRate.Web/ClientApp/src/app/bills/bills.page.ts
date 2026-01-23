@@ -295,12 +295,21 @@ import { Bill } from '../core/models/bill.model';
         </div>
       }
       <ng-template pTemplate="footer">
-        <p-button
-          label="Close"
-          icon="pi pi-times"
-          [text]="true"
-          (onClick)="closeDetailDialog()"
-        />
+        <div class="flex justify-between w-full">
+          <p-button
+            label="Download PDF"
+            icon="pi pi-file-pdf"
+            severity="secondary"
+            [loading]="downloadingPdf()"
+            (onClick)="downloadPdf()"
+          />
+          <p-button
+            label="Close"
+            icon="pi pi-times"
+            [text]="true"
+            (onClick)="closeDetailDialog()"
+          />
+        </div>
       </ng-template>
     </p-dialog>
 
@@ -323,6 +332,7 @@ export class BillsPage implements OnInit {
   // Detail dialog
   showDetailDialog = false;
   selectedBill = signal<Bill | null>(null);
+  downloadingPdf = signal(false);
 
   // Property map for quick lookups
   private propertyMap = signal<Map<string, string>>(new Map());
@@ -401,6 +411,46 @@ export class BillsPage implements OnInit {
   closeDetailDialog(): void {
     this.showDetailDialog = false;
     this.selectedBill.set(null);
+  }
+
+  async downloadPdf(): Promise<void> {
+    const bill = this.selectedBill();
+    if (!bill) return;
+
+    this.downloadingPdf.set(true);
+
+    try {
+      const blob = await this.billService.getInvoicePdfBlob(bill.id);
+
+      // Create download link and append to DOM for browser compatibility
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Invoice-${bill.invoiceNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up the link element and object URL asynchronously to avoid
+      // cancelling the download in some browsers.
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 0);
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'PDF downloaded successfully.'
+      });
+    } catch {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to download PDF.'
+      });
+    } finally {
+      this.downloadingPdf.set(false);
+    }
   }
 
   confirmDelete(bill: Bill): void {

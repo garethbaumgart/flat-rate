@@ -3,6 +3,7 @@ using FlatRate.Infrastructure;
 using FlatRate.Infrastructure.Persistence;
 using FlatRate.Web.Auth;
 using FlatRate.Web.Endpoints;
+using FlatRate.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -15,6 +16,9 @@ builder.Services.AddApplication();
 
 // Add Infrastructure services (EF Core, repositories)
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Add PDF generation service
+builder.Services.AddScoped<InvoicePdfService>();
 
 // Authentication setup
 var authBuilder = builder.Services.AddAuthentication(options =>
