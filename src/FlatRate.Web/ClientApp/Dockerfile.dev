@@ -1,0 +1,18 @@
+FROM node:24-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy the rest of the app
+COPY . .
+
+# Expose port
+EXPOSE 4200
+
+# Start Angular dev server with host binding for Docker
+CMD ["npm", "run", "start", "--", "--host", "0.0.0.0", "--poll", "2000"]

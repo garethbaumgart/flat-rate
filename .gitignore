@@ -1,0 +1,49 @@
+# .NET
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+.vs/
+*.DotSettings.user
+
+# Node
+node_modules/
+dist/
+.angular/
+.npm/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# Docker
+docker-compose.override.yml
+
+# Test results
+TestResults/
+coverage/
+
+# Build outputs
+publish/
+artifacts/

@@ -1,0 +1,64 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:17-alpine
+    container_name: flatrate-db
+    environment:
+      POSTGRES_USER: flatrate
+      POSTGRES_PASSWORD: flatrate
+      POSTGRES_DB: flatrate
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flatrate"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - dev-stack
+      - e2e
+
+  # .NET API with hot reload
+  api:
+    build:
+      context: .
+      dockerfile: src/FlatRate.Web/Dockerfile.dev
+    container_name: flatrate-api-dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5002
+      - ConnectionStrings__DefaultConnection=Host=db;Database=flatrate;Username=flatrate;Password=flatrate
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./src:/app/src:cached
+      - ./tests:/app/tests:cached
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - dev-stack
+
+  # Angular frontend with hot reload
+  frontend:
+    build:
+      context: ./src/FlatRate.Web/ClientApp
+      dockerfile: Dockerfile.dev
+    container_name: flatrate-frontend-dev
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./src/FlatRate.Web/ClientApp:/app:cached
+      - /app/node_modules
+    depends_on:
+      - api
+    profiles:
+      - dev-stack
+
+volumes:
+  postgres_data:
