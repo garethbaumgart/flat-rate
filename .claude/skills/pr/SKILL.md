@@ -40,53 +40,72 @@ Once tests pass:
 1. Push any remaining commits to the remote branch
 2. Create the PR using `gh pr create`
 
-## Step 5: Post-PR Review and Monitoring
+## Step 5: Continuous CI and Review Monitoring Loop
 
-After the PR is created, **actively monitor** and address feedback:
+After the PR is created, **continuously monitor** until ready to merge:
 
-1. **Self code review**: Review the PR diff using `gh pr diff` and look for:
-   - Code duplication that could be extracted (DRY principle)
-   - Performance improvements without added complexity
-   - Patterns that don't match existing codebase conventions
-   - Missing null guards or error handling
-   - Accessibility issues (missing aria-labels on icon-only buttons)
+### 5a. Self Code Review
+Review the PR diff using `gh pr diff` and look for:
+- Code duplication that could be extracted (DRY principle)
+- Performance improvements without added complexity
+- Patterns that don't match existing codebase conventions
+- Missing null guards or error handling
+- Accessibility issues (missing aria-labels on icon-only buttons)
 
-   **Apply good refactoring opportunities** you identify - don't defer them to future PRs unless they require significant architectural changes. Add comments for any issues found using `gh pr comment` or `gh api`
-2. **Wait for CI**: Monitor GitHub Actions for completion using `gh pr checks`
-3. **Check for warnings**: Review action logs AND annotations for any warnings (not just failures)
+**Apply good refactoring opportunities** you identify - don't defer them to future PRs unless they require significant architectural changes.
+
+### 5b. Monitor CI Status
+1. Check CI status: `gh pr checks`
+2. If checks are still running, wait 30 seconds and check again
+3. If checks fail:
+   - Review the logs: `gh run view <run-id> --log-failed`
+   - Fix the issues, commit, push
+   - Return to monitoring loop
+4. Check for warnings in annotations:
    - Use `gh api repos/{owner}/{repo}/check-runs/{job_id}/annotations` to fetch annotations
-   - Common warnings: deprecation notices, bundle size budgets, artifact upload failures, EF Core model validation
-   - **ALL warnings must be addressed** - either fix the issue or update the workflow if it's a false positive
-4. **Monitor for AI reviews**: Actively poll for CodeRabbit and Copilot reviews to complete
-   - **CodeRabbit**: Use `gh pr checks` - wait until CodeRabbit shows "Review completed"
-   - **Copilot**: Use `gh api repos/{owner}/{repo}/pulls/{number}/reviews --jq '.[] | select(.user.login | contains("copilot")) | .state'` to check if Copilot has submitted a review (look for "COMMENTED" state)
-   - Alternatively, use `gh pr view <number> --comments` and look for comments from `copilot-pull-request-reviewer[bot]`
-   - Keep checking every 30-60 seconds until BOTH CodeRabbit AND Copilot reviews are complete
-5. **Address all comments immediately**: When comments appear:
-   - Read each comment carefully, including **high-level feedback** in comment bodies (not just line-specific suggestions)
-   - **For line comments (have their own ID)**:
-     - **If addressing**: Add a thumbs up reaction using `gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions -X POST -f content='+1'`, then make the fix
-     - **If not addressing**: Reply to the comment explaining why (e.g., out of scope, matches existing patterns, deferred to follow-up)
-   - **For high-level feedback in PR comments**: Reply to the comment addressing each suggestion - either confirm you'll fix it or explain why not
-   - **Apply good refactoring suggestions**: When reviewers suggest refactoring (e.g., extracting duplicated code, improving efficiency), evaluate and apply them if they:
-     - Reduce code duplication (DRY principle)
-     - Improve performance without adding complexity
-     - Follow existing patterns in the codebase
-     - Are straightforward to implement
-   - Do NOT defer refactoring suggestions to "future PRs" unless they are truly out of scope or require significant architectural changes
-   - Commit, push, and verify the fix resolves the comment
-6. **Verify CI passes**: After all fixes, ensure all checks pass (no warnings in annotations)
+   - **ALL warnings must be addressed** - either fix or document why not
 
-**Do not stop monitoring until**: All AI reviews are complete (both CodeRabbit AND Copilot have submitted reviews), all comments are addressed, and CI is green.
+### 5c. Monitor for AI Reviews
+Poll for CodeRabbit and Copilot reviews:
+1. **CodeRabbit**: Use `gh pr checks` - wait until CodeRabbit shows "Review completed"
+2. **Copilot/Sourcery**: Check `gh pr view <number> --comments` for bot comments
+3. If reviews not yet complete, wait 30 seconds and check again
+4. **Keep monitoring** - reviews may come in multiple rounds
 
-## Step 6: Manual Testing (Required Before Merge)
+### 5d. Address All Comments
+When comments appear from reviewers (human or AI):
+1. Read each comment carefully, including **high-level feedback**
+2. **For line comments**:
+   - **If addressing**: React with thumbs up, then make the fix
+   - **If not addressing**: Reply explaining why
+3. **Apply good refactoring suggestions** when they:
+   - Reduce code duplication (DRY principle)
+   - Improve performance without adding complexity
+   - Follow existing patterns in the codebase
+4. Commit, push, and **return to Step 5b** (CI monitoring loop)
 
-Once CI is green and all comments are addressed:
+### 5e. Loop Completion Criteria
+Continue the monitoring loop until ALL of these are true:
+- [ ] All CI checks pass (green)
+- [ ] No warnings in CI annotations
+- [ ] CodeRabbit review is complete
+- [ ] Copilot/Sourcery review is complete (or confirmed not enabled)
+- [ ] All review comments have been addressed
 
-1. **Start the dev stack**: Run `docker compose --profile dev-stack up`
-2. **Notify the user**: Tell them the app is running at http://localhost:4200 and ask them to test the changes
-3. **Wait for approval**: Do NOT merge until the user explicitly approves or provides feedback
-4. **If feedback given**: Make fixes, commit, push, and repeat from Step 5 (CI monitoring)
-5. **If approved**: Proceed to merge with `gh pr merge --squash --delete-branch`
+## Step 6: Automatic Merge
 
-**Exception**: Skip this step for markdown-only PRs (`.md` files only) - merge immediately.
+Once the monitoring loop is complete (all CI checks pass, all reviews complete, all comments addressed):
+
+**Merge automatically**:
+```bash
+gh pr merge --squash --delete-branch
+```
+
+Then notify the user the PR was merged and ask what to work on next.
+
+## Post-Merge
+
+After merging:
+1. Confirm the PR was merged successfully
+2. Check if there's an associated GitHub issue to close
+3. Ask the user what to work on next (e.g., next issue in the backlog)
