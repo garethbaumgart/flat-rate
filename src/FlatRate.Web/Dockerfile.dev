@@ -2,20 +2,15 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0
 
 WORKDIR /app
 
-# Install dotnet-watch for hot reload
-RUN dotnet tool install --global dotnet-watch
-ENV PATH="$PATH:/root/.dotnet/tools"
-
-# Copy solution and project files for restore
-COPY src/FlatRate.slnx ./src/
+# Copy project files for restore (restore by project, not solution, to avoid test dependencies)
 COPY src/FlatRate.Domain/FlatRate.Domain.csproj ./src/FlatRate.Domain/
 COPY src/FlatRate.Application/FlatRate.Application.csproj ./src/FlatRate.Application/
 COPY src/FlatRate.Infrastructure/FlatRate.Infrastructure.csproj ./src/FlatRate.Infrastructure/
 COPY src/FlatRate.Web/FlatRate.Web.csproj ./src/FlatRate.Web/
 
 # Restore dependencies
-RUN dotnet restore src/FlatRate.slnx
+WORKDIR /app/src/FlatRate.Web
+RUN dotnet restore
 
 # Start with hot reload
-WORKDIR /app/src/FlatRate.Web
 CMD ["dotnet", "watch", "run", "--no-launch-profile"]

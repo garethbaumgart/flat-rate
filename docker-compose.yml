@@ -1,5 +1,6 @@
 services:
   # PostgreSQL Database
+  # Uses port 5434 to avoid conflicts with praxis-note (5432) and other projects
   db:
     image: postgres:17-alpine
     container_name: flatrate-db
@@ -8,7 +9,7 @@ services:
       POSTGRES_PASSWORD: flatrate
       POSTGRES_DB: flatrate
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -21,6 +22,7 @@ services:
       - e2e
 
   # .NET API with hot reload
+  # Uses port 5003 to avoid conflicts with praxis-note (5002)
   api:
     build:
       context: .
@@ -28,10 +30,10 @@ services:
     container_name: flatrate-api-dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:5002
+      - ASPNETCORE_URLS=http://+:5003
       - ConnectionStrings__DefaultConnection=Host=db;Database=flatrate;Username=flatrate;Password=flatrate
     ports:
-      - "5002:5002"
+      - "5003:5003"
     volumes:
       - ./src:/app/src:cached
       - ./tests:/app/tests:cached
@@ -43,6 +45,7 @@ services:
       - dev-stack
 
   # Angular frontend with hot reload
+  # Uses port 4201 to avoid conflicts with praxis-note (4200)
   frontend:
     build:
       context: ./src/FlatRate.Web/ClientApp
@@ -51,7 +54,7 @@ services:
     environment:
       - NODE_ENV=development
     ports:
-      - "4200:4200"
+      - "4201:4200"
     volumes:
       - ./src/FlatRate.Web/ClientApp:/app:cached
       - /app/node_modules
