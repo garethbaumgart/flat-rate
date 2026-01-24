@@ -14,5 +14,5 @@ COPY . .
 # Expose port
 EXPOSE 4200
 
-# Start Angular dev server with host binding for Docker
-CMD ["npm", "run", "start", "--", "--host", "0.0.0.0", "--poll", "2000"]
+# Start Angular dev server with host binding and API proxy for Docker
+CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--poll", "2000", "--proxy-config", "proxy.conf.json"]

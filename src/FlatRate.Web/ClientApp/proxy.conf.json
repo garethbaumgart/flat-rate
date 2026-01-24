@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "http://api:5003",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
