@@ -78,11 +78,20 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Apply migrations on startup
+// Apply database schema on startup
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<FlatRateDbContext>();
-    dbContext.Database.Migrate();
+    // In development/testing, use EnsureCreated for simplicity
+    // In production, this should use migrations
+    if (app.Environment.IsDevelopment())
+    {
+        dbContext.Database.EnsureCreated();
+    }
+    else
+    {
+        dbContext.Database.Migrate();
+    }
 }
 
 app.UseAuthentication();
