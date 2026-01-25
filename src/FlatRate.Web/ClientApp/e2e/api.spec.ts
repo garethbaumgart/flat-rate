@@ -9,6 +9,13 @@ test.describe('API Endpoints', () => {
   let createdPropertyId: string;
   let createdBillId: string;
 
+  // Helper to ensure user exists before making authenticated API calls
+  async function ensureUserExists(request: any) {
+    await request.get('/api/auth/user', {
+      headers: mockAuthHeader
+    });
+  }
+
   test('health endpoint should return healthy status', async ({ request }) => {
     const response = await request.get('/api/health');
     expect(response.status()).toBe(200);
@@ -19,6 +26,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should create a property', async ({ request }) => {
+    await ensureUserExists(request);
+
     const response = await request.post('/api/properties', {
       headers: mockAuthHeader,
       data: {
@@ -41,6 +50,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should list properties', async ({ request }) => {
+    await ensureUserExists(request);
+
     const response = await request.get('/api/properties', {
       headers: mockAuthHeader
     });
@@ -51,6 +62,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should get property by id', async ({ request }) => {
+    await ensureUserExists(request);
+
     // First create a property
     const createResponse = await request.post('/api/properties', {
       headers: mockAuthHeader,
@@ -82,6 +95,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should create a bill', async ({ request }) => {
+    await ensureUserExists(request);
+
     // First create a property
     const propertyResponse = await request.post('/api/properties', {
       headers: mockAuthHeader,
@@ -131,6 +146,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should list bills', async ({ request }) => {
+    await ensureUserExists(request);
+
     const response = await request.get('/api/bills', {
       headers: mockAuthHeader
     });
@@ -141,6 +158,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should get bill by id', async ({ request }) => {
+    await ensureUserExists(request);
+
     // First create a property
     const propertyResponse = await request.post('/api/properties', {
       headers: mockAuthHeader,
@@ -196,6 +215,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should download bill PDF', async ({ request }) => {
+    await ensureUserExists(request);
+
     // First create a property
     const propertyResponse = await request.post('/api/properties', {
       headers: mockAuthHeader,
@@ -249,6 +270,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should delete a bill', async ({ request }) => {
+    await ensureUserExists(request);
+
     // First create a property
     const propertyResponse = await request.post('/api/properties', {
       headers: mockAuthHeader,
