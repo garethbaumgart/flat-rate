@@ -1,36 +1,162 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { AuthService } from '../core/services/auth.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [ButtonModule, RouterLink],
   template: `
-    <div class="flex flex-col items-center justify-center min-h-screen p-8">
-      <h1 class="text-4xl font-bold text-gray-900 mb-4">FlatRate</h1>
-      <p class="text-lg text-gray-600 mb-8">Monthly utility billing for rental properties</p>
-      <div class="flex flex-wrap justify-center gap-4">
-        <p-button
-          label="Manage Properties"
-          icon="pi pi-building"
-          routerLink="/properties"
-        />
-        <p-button
-          label="View Bills"
-          icon="pi pi-file"
-          severity="secondary"
-          routerLink="/bills"
-        />
-        <p-button
-          label="Create Bill"
-          icon="pi pi-plus"
-          severity="success"
-          routerLink="/bills/create"
-        />
-      </div>
+    <div class="min-h-[calc(100vh-10rem)]">
+      <!-- Hero Section -->
+      <section class="relative overflow-hidden py-16 md:py-24">
+        <!-- Background gradient -->
+        <div
+          class="absolute inset-0 opacity-30"
+          style="background: radial-gradient(ellipse at top, var(--color-accent-bg) 0%, transparent 50%);"
+        ></div>
+
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center">
+            <!-- Logo Icon -->
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl gradient-accent mb-8 shadow-lg">
+              <i class="pi pi-bolt text-white text-4xl"></i>
+            </div>
+
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" style="color: var(--color-text-primary);">
+              Utility Billing
+              <span class="block" style="color: var(--color-accent);">Made Simple</span>
+            </h1>
+
+            <p class="text-lg md:text-xl max-w-2xl mx-auto mb-10" style="color: var(--color-text-secondary);">
+              Generate professional utility bills for your rental properties with tiered water and electricity rates.
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+              @if (authService.isAuthenticated()) {
+                <p-button
+                  label="Create Bill"
+                  icon="pi pi-plus"
+                  size="large"
+                  routerLink="/bills/create"
+                  styleClass="px-8"
+                />
+                <p-button
+                  label="Manage Properties"
+                  icon="pi pi-building"
+                  severity="secondary"
+                  size="large"
+                  [outlined]="true"
+                  routerLink="/properties"
+                  styleClass="px-8"
+                />
+              } @else {
+                <p-button
+                  label="Sign in to Get Started"
+                  icon="pi pi-google"
+                  size="large"
+                  (onClick)="authService.login()"
+                  styleClass="px-8"
+                />
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section class="py-16" style="background: var(--color-bg-secondary);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 class="text-2xl md:text-3xl font-bold text-center mb-12" style="color: var(--color-text-primary);">
+            Everything You Need
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="glass-card p-6 text-center">
+              <div
+                class="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4"
+                style="background: var(--color-accent-bg);"
+              >
+                <i class="pi pi-building text-2xl" style="color: var(--color-accent);"></i>
+              </div>
+              <h3 class="text-lg font-semibold mb-2" style="color: var(--color-text-primary);">
+                Property Management
+              </h3>
+              <p style="color: var(--color-text-secondary);">
+                Store property details and default rates for quick bill generation.
+              </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="glass-card p-6 text-center">
+              <div
+                class="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4"
+                style="background: var(--color-accent-bg);"
+              >
+                <i class="pi pi-chart-bar text-2xl" style="color: var(--color-accent);"></i>
+              </div>
+              <h3 class="text-lg font-semibold mb-2" style="color: var(--color-text-primary);">
+                Tiered Billing
+              </h3>
+              <p style="color: var(--color-text-secondary);">
+                Support for tiered water and sanitation rates following municipal structures.
+              </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="glass-card p-6 text-center">
+              <div
+                class="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4"
+                style="background: var(--color-accent-bg);"
+              >
+                <i class="pi pi-file-pdf text-2xl" style="color: var(--color-accent);"></i>
+              </div>
+              <h3 class="text-lg font-semibold mb-2" style="color: var(--color-text-primary);">
+                PDF Export
+              </h3>
+              <p style="color: var(--color-text-secondary);">
+                Generate professional PDF invoices ready to share with tenants.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Stats Section -->
+      <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="p-6 rounded-xl border text-center"
+              style="background: var(--color-bg-card); border-color: var(--color-border);"
+            >
+              <div class="text-3xl font-bold mb-1" style="color: var(--color-accent);">3</div>
+              <div style="color: var(--color-text-secondary);">Tier Water Rates</div>
+            </div>
+            <div
+              class="p-6 rounded-xl border text-center"
+              style="background: var(--color-bg-card); border-color: var(--color-border);"
+            >
+              <div class="text-3xl font-bold mb-1" style="color: var(--color-accent);">15%</div>
+              <div style="color: var(--color-text-secondary);">VAT Calculated</div>
+            </div>
+            <div
+              class="p-6 rounded-xl border text-center"
+              style="background: var(--color-bg-card); border-color: var(--color-border);"
+            >
+              <div class="text-3xl font-bold mb-1" style="color: var(--color-accent);">ZAR</div>
+              <div style="color: var(--color-text-secondary);">South African Rand</div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomePage {}
+export class HomePage {
+  readonly authService = inject(AuthService);
+}

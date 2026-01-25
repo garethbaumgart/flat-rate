@@ -1,4 +1,6 @@
+using FlatRate.Application.Common;
 using FlatRate.Domain.Aggregates.Bills;
+using FlatRate.Domain.Aggregates.Properties;
 using FlatRate.Domain.Repositories;
 using FlatRate.Domain.ValueObjects;
 using MediatR;
@@ -11,16 +13,39 @@ namespace FlatRate.Application.Bills.Commands.CreateBill;
 public sealed class CreateBillCommandHandler : IRequestHandler<CreateBillCommand, Guid>
 {
     private readonly IBillRepository _billRepository;
+    private readonly IPropertyRepository _propertyRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
-    public CreateBillCommandHandler(IBillRepository billRepository, IUnitOfWork unitOfWork)
+    public CreateBillCommandHandler(
+        IBillRepository billRepository,
+        IPropertyRepository propertyRepository,
+        IUnitOfWork unitOfWork,
+        ICurrentUserService currentUserService)
     {
         _billRepository = billRepository;
+        _propertyRepository = propertyRepository;
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Guid> Handle(CreateBillCommand request, CancellationToken cancellationToken)
     {
+        if (_currentUserService.UserId is null)
+        {
+            throw new UnauthorizedAccessException("User must be authenticated to create a bill.");
+        }
+
+        // Verify user has access to this property
+        var hasAccess = await _propertyRepository.UserHasAccessAsync(
+            request.PropertyId,
+            _currentUserService.UserId.Value,
+            cancellationToken);
+
+        if (!hasAccess)
+        {
+            throw new UnauthorizedAccessException("User does not have access to this property.");
+        }
         var invoiceNumber = await _billRepository.GetNextInvoiceNumberAsync(cancellationToken);
 
         var electricityReading = MeterReading.Create(request.ElectricityReadingOpening, request.ElectricityReadingClosing);

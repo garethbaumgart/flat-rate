@@ -45,4 +45,33 @@ public sealed class PropertyRepository : IPropertyRepository
     {
         _context.Properties.Remove(property);
     }
+
+    public async Task<IReadOnlyList<Property>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        // Get all properties that the user has access to
+        var propertyIds = await _context.PropertyAccess
+            .Where(pa => pa.UserId == userId)
+            .Select(pa => pa.PropertyId)
+            .ToListAsync(cancellationToken);
+
+        return await _context.Properties
+            .AsNoTracking()
+            .Where(p => propertyIds.Contains(p.Id))
+            .OrderBy(p => p.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<bool> UserHasAccessAsync(Guid propertyId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.PropertyAccess
+            .AnyAsync(pa => pa.PropertyId == propertyId && pa.UserId == userId, cancellationToken);
+    }
+
+    public async Task<PropertyRole?> GetUserRoleAsync(Guid propertyId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        var access = await _context.PropertyAccess
+            .FirstOrDefaultAsync(pa => pa.PropertyId == propertyId && pa.UserId == userId, cancellationToken);
+
+        return access?.Role;
+    }
 }

@@ -2,16 +2,17 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, signal } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { TagModule } from 'primeng/tag';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { PropertyService } from '../core/services/property.service';
-import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../core/models/property.model';
+import { PropertySharingService } from '../core/services/property-sharing.service';
+import { Property, SetPropertyRatesRequest } from '../core/models/property.model';
 
 @Component({
   selector: 'app-properties',
@@ -20,21 +21,26 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
     CommonModule,
     FormsModule,
     ButtonModule,
-    CardModule,
     TableModule,
     DialogModule,
     InputTextModule,
     InputNumberModule,
     ToastModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    TagModule
   ],
   providers: [MessageService, ConfirmationService],
   template: `
-    <div class="p-4 md:p-8">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Page Header -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Properties</h1>
-          <p class="text-gray-600 mt-1">Manage your rental properties</p>
+          <h1 class="text-2xl md:text-3xl font-bold" style="color: var(--color-text-primary);">
+            Properties
+          </h1>
+          <p style="color: var(--color-text-secondary);" class="mt-1">
+            Manage your rental properties and default rates
+          </p>
         </div>
         <p-button
           label="Add Property"
@@ -44,36 +50,54 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
       </div>
 
       @if (propertyService.loading()) {
-        <div class="flex justify-center py-8">
-          <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+        <div class="flex justify-center py-16">
+          <div class="flex flex-col items-center gap-4">
+            <i class="pi pi-spin pi-spinner text-4xl" style="color: var(--color-accent);"></i>
+            <p style="color: var(--color-text-secondary);">Loading properties...</p>
+          </div>
         </div>
       } @else if (propertyService.error()) {
-        <p-card>
-          <div class="text-center py-8">
-            <i class="pi pi-exclamation-triangle text-4xl text-red-500 mb-4"></i>
-            <p class="text-gray-600">{{ propertyService.error() }}</p>
-            <p-button
-              label="Try Again"
-              icon="pi pi-refresh"
-              styleClass="mt-4"
-              (onClick)="loadProperties()"
-            />
-          </div>
-        </p-card>
+        <div
+          class="rounded-xl border p-8 text-center"
+          style="background: var(--color-bg-card); border-color: var(--color-border);"
+        >
+          <i class="pi pi-exclamation-triangle text-4xl mb-4" style="color: var(--color-error);"></i>
+          <p style="color: var(--color-text-secondary);" class="mb-4">{{ propertyService.error() }}</p>
+          <p-button
+            label="Try Again"
+            icon="pi pi-refresh"
+            severity="secondary"
+            (onClick)="loadProperties()"
+          />
+        </div>
       } @else if (!propertyService.hasProperties()) {
-        <p-card>
-          <div class="text-center py-8">
-            <i class="pi pi-building text-4xl text-gray-400 mb-4"></i>
-            <p class="text-gray-600 mb-4">No properties yet. Add your first property to get started.</p>
-            <p-button
-              label="Add Property"
-              icon="pi pi-plus"
-              (onClick)="openCreateDialog()"
-            />
+        <div
+          class="rounded-xl border p-12 text-center"
+          style="background: var(--color-bg-card); border-color: var(--color-border);"
+        >
+          <div
+            class="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-6"
+            style="background: var(--color-accent-bg);"
+          >
+            <i class="pi pi-building text-3xl" style="color: var(--color-accent);"></i>
           </div>
-        </p-card>
+          <h3 class="text-lg font-semibold mb-2" style="color: var(--color-text-primary);">
+            No properties yet
+          </h3>
+          <p style="color: var(--color-text-secondary);" class="mb-6 max-w-md mx-auto">
+            Add your first property to start managing utility rates and generating bills.
+          </p>
+          <p-button
+            label="Add Property"
+            icon="pi pi-plus"
+            (onClick)="openCreateDialog()"
+          />
+        </div>
       } @else {
-        <p-card>
+        <div
+          class="rounded-xl border overflow-hidden"
+          style="background: var(--color-bg-card); border-color: var(--color-border);"
+        >
           <p-table
             [value]="propertyService.properties()"
             styleClass="p-datatable-sm"
@@ -89,23 +113,44 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
             <ng-template pTemplate="body" let-property>
               <tr>
                 <td>
-                  <div class="font-medium">{{ property.name }}</div>
-                  <div class="text-sm text-gray-500 md:hidden">{{ property.address }}</div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-medium" style="color: var(--color-text-primary);">{{ property.name }}</span>
+                    @if (property.currentUserRole === 'Editor') {
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                        style="background: var(--color-bg-tertiary); color: var(--color-text-muted);">
+                        Shared
+                      </span>
+                    }
+                  </div>
+                  <div class="text-sm md:hidden" style="color: var(--color-text-secondary);">{{ property.address }}</div>
                 </td>
-                <td class="hidden md:table-cell">{{ property.address }}</td>
+                <td class="hidden md:table-cell" style="color: var(--color-text-secondary);">{{ property.address }}</td>
                 <td class="hidden lg:table-cell">
                   @if (hasDefaultRates(property)) {
-                    <span class="text-green-600">
-                      <i class="pi pi-check-circle mr-1"></i>Configured
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                      style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                      <i class="pi pi-check-circle"></i>Configured
                     </span>
                   } @else {
-                    <span class="text-gray-400">
-                      <i class="pi pi-minus-circle mr-1"></i>Not set
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                      style="background: var(--color-bg-tertiary); color: var(--color-text-muted);">
+                      <i class="pi pi-minus-circle"></i>Not set
                     </span>
                   }
                 </td>
                 <td class="text-right">
-                  <div class="flex justify-end gap-2">
+                  <div class="flex justify-end gap-1">
+                    @if (property.currentUserRole === 'Owner') {
+                      <p-button
+                        icon="pi pi-users"
+                        [rounded]="true"
+                        [text]="true"
+                        severity="secondary"
+                        pTooltip="Share"
+                        ariaLabel="Share property"
+                        (onClick)="openCollaboratorsDialog(property)"
+                      />
+                    }
                     <p-button
                       icon="pi pi-pencil"
                       [rounded]="true"
@@ -124,21 +169,23 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
                       ariaLabel="Set rates for property"
                       (onClick)="openRatesDialog(property)"
                     />
-                    <p-button
-                      icon="pi pi-trash"
-                      [rounded]="true"
-                      [text]="true"
-                      severity="danger"
-                      pTooltip="Delete"
-                      ariaLabel="Delete property"
-                      (onClick)="confirmDelete(property)"
-                    />
+                    @if (property.currentUserRole === 'Owner') {
+                      <p-button
+                        icon="pi pi-trash"
+                        [rounded]="true"
+                        [text]="true"
+                        severity="danger"
+                        pTooltip="Delete"
+                        ariaLabel="Delete property"
+                        (onClick)="confirmDelete(property)"
+                      />
+                    }
                   </div>
                 </td>
               </tr>
             </ng-template>
           </p-table>
-        </p-card>
+        </div>
       }
     </div>
 
@@ -151,7 +198,7 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
     >
       <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-2">
-          <label for="name" class="font-medium">Name *</label>
+          <label for="name" class="font-medium" style="color: var(--color-text-primary);">Name *</label>
           <input
             pInputText
             id="name"
@@ -161,7 +208,7 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
           />
         </div>
         <div class="flex flex-col gap-2">
-          <label for="address" class="font-medium">Address *</label>
+          <label for="address" class="font-medium" style="color: var(--color-text-primary);">Address *</label>
           <input
             pInputText
             id="address"
@@ -176,6 +223,7 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
           label="Cancel"
           icon="pi pi-times"
           [text]="true"
+          severity="secondary"
           (onClick)="closePropertyDialog()"
         />
         <p-button
@@ -195,91 +243,105 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
       [style]="{ width: '90vw', maxWidth: '600px' }"
     >
       @if (selectedProperty()) {
-        <div class="mb-4">
-          <p class="text-gray-600">
-            Setting default rates for <strong>{{ selectedProperty()?.name }}</strong>
+        <div class="mb-6 p-4 rounded-lg" style="background: var(--color-bg-tertiary);">
+          <p style="color: var(--color-text-secondary);">
+            Setting default rates for <strong style="color: var(--color-text-primary);">{{ selectedProperty()?.name }}</strong>
           </p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="flex flex-col gap-2">
-            <label for="electricityRate" class="font-medium">Electricity Rate (per kWh)</label>
+            <label for="electricityRate" class="font-medium" style="color: var(--color-text-primary);">
+              Electricity Rate (per kWh)
+            </label>
             <p-inputNumber
               id="electricityRate"
               [(ngModel)]="ratesForm.electricityRate"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
-              class="w-full"
+              styleClass="w-full"
             />
           </div>
           <div></div>
 
           <div class="flex flex-col gap-2">
-            <label for="waterTier1" class="font-medium">Water Tier 1 (0-6 kL)</label>
+            <label for="waterTier1" class="font-medium" style="color: var(--color-text-primary);">
+              Water Tier 1 (0-6 kL)
+            </label>
             <p-inputNumber
               id="waterTier1"
               [(ngModel)]="ratesForm.waterRateTier1"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
-              class="w-full"
+              styleClass="w-full"
             />
           </div>
           <div class="flex flex-col gap-2">
-            <label for="sanitationTier1" class="font-medium">Sanitation Tier 1 (0-6 kL)</label>
+            <label for="sanitationTier1" class="font-medium" style="color: var(--color-text-primary);">
+              Sanitation Tier 1 (0-6 kL)
+            </label>
             <p-inputNumber
               id="sanitationTier1"
               [(ngModel)]="ratesForm.sanitationRateTier1"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
-              class="w-full"
+              styleClass="w-full"
             />
           </div>
 
           <div class="flex flex-col gap-2">
-            <label for="waterTier2" class="font-medium">Water Tier 2 (7-15 kL)</label>
+            <label for="waterTier2" class="font-medium" style="color: var(--color-text-primary);">
+              Water Tier 2 (7-15 kL)
+            </label>
             <p-inputNumber
               id="waterTier2"
               [(ngModel)]="ratesForm.waterRateTier2"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
-              class="w-full"
+              styleClass="w-full"
             />
           </div>
           <div class="flex flex-col gap-2">
-            <label for="sanitationTier2" class="font-medium">Sanitation Tier 2 (7-15 kL)</label>
+            <label for="sanitationTier2" class="font-medium" style="color: var(--color-text-primary);">
+              Sanitation Tier 2 (7-15 kL)
+            </label>
             <p-inputNumber
               id="sanitationTier2"
               [(ngModel)]="ratesForm.sanitationRateTier2"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
-              class="w-full"
+              styleClass="w-full"
             />
           </div>
 
           <div class="flex flex-col gap-2">
-            <label for="waterTier3" class="font-medium">Water Tier 3 (16+ kL)</label>
+            <label for="waterTier3" class="font-medium" style="color: var(--color-text-primary);">
+              Water Tier 3 (16+ kL)
+            </label>
             <p-inputNumber
               id="waterTier3"
               [(ngModel)]="ratesForm.waterRateTier3"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
-              class="w-full"
+              styleClass="w-full"
             />
           </div>
           <div class="flex flex-col gap-2">
-            <label for="sanitationTier3" class="font-medium">Sanitation Tier 3 (16+ kL)</label>
+            <label for="sanitationTier3" class="font-medium" style="color: var(--color-text-primary);">
+              Sanitation Tier 3 (16+ kL)
+            </label>
             <p-inputNumber
               id="sanitationTier3"
               [(ngModel)]="ratesForm.sanitationRateTier3"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
-              class="w-full"
+              styleClass="w-full"
             />
           </div>
         </div>
@@ -289,6 +351,7 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
           label="Cancel"
           icon="pi pi-times"
           [text]="true"
+          severity="secondary"
           (onClick)="closeRatesDialog()"
         />
         <p-button
@@ -300,6 +363,112 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
       </ng-template>
     </p-dialog>
 
+    <!-- Collaborators Dialog -->
+    <p-dialog
+      header="Share Property"
+      [(visible)]="showCollaboratorsDialog"
+      [modal]="true"
+      [style]="{ width: '90vw', maxWidth: '600px' }"
+    >
+      @if (selectedProperty()) {
+        <div class="mb-6 p-4 rounded-lg" style="background: var(--color-bg-tertiary);">
+          <p style="color: var(--color-text-secondary);">
+            Manage access to <strong style="color: var(--color-text-primary);">{{ selectedProperty()?.name }}</strong>
+          </p>
+        </div>
+
+        <!-- Invite Form -->
+        <div class="mb-6 flex gap-2">
+          <input
+            pInputText
+            [(ngModel)]="inviteEmail"
+            placeholder="Enter email address"
+            class="flex-1"
+            type="email"
+          />
+          <p-button
+            label="Invite"
+            icon="pi pi-user-plus"
+            [loading]="sharingService.loading()"
+            (onClick)="inviteCollaborator()"
+          />
+        </div>
+
+        <!-- Collaborators List -->
+        @if (sharingService.loading() && sharingService.collaborators().length === 0) {
+          <div class="flex justify-center py-8">
+            <i class="pi pi-spin pi-spinner text-2xl" style="color: var(--color-accent);"></i>
+          </div>
+        } @else if (sharingService.collaborators().length === 0) {
+          <div class="text-center py-8" style="color: var(--color-text-secondary);">
+            <i class="pi pi-users text-4xl mb-4" style="opacity: 0.5;"></i>
+            <p>No collaborators yet. Invite someone to share this property.</p>
+          </div>
+        } @else {
+          <div class="divide-y" style="border-color: var(--color-border);">
+            @for (collaborator of sharingService.collaborators(); track collaborator.userId || collaborator.email) {
+              <div class="flex items-center justify-between py-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center"
+                    style="background: var(--color-accent-bg);">
+                    <i class="pi pi-user" style="color: var(--color-accent);"></i>
+                  </div>
+                  <div>
+                    <div class="font-medium" style="color: var(--color-text-primary);">
+                      {{ collaborator.name || collaborator.email }}
+                    </div>
+                    @if (collaborator.name && collaborator.email) {
+                      <div class="text-sm" style="color: var(--color-text-secondary);">
+                        {{ collaborator.email }}
+                      </div>
+                    }
+                    @if (collaborator.isPending) {
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium mt-1"
+                        style="background: rgba(251, 191, 36, 0.1); color: #f59e0b;">
+                        Pending
+                      </span>
+                    }
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                    [style.background]="collaborator.role === 'Owner' ? 'rgba(99, 102, 241, 0.1)' : 'var(--color-bg-tertiary)'"
+                    [style.color]="collaborator.role === 'Owner' ? '#6366f1' : 'var(--color-text-muted)'">
+                    {{ collaborator.role }}
+                  </span>
+                  @if (collaborator.role !== 'Owner' && collaborator.userId) {
+                    <p-button
+                      icon="pi pi-times"
+                      [rounded]="true"
+                      [text]="true"
+                      severity="danger"
+                      pTooltip="Remove access"
+                      ariaLabel="Remove access"
+                      (onClick)="confirmRevokeAccess(collaborator)"
+                    />
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (sharingService.error()) {
+          <div class="mt-4 p-3 rounded-lg" style="background: rgba(239, 68, 68, 0.1);">
+            <p class="text-sm" style="color: #ef4444;">{{ sharingService.error() }}</p>
+          </div>
+        }
+      }
+      <ng-template pTemplate="footer">
+        <p-button
+          label="Close"
+          [text]="true"
+          severity="secondary"
+          (onClick)="closeCollaboratorsDialog()"
+        />
+      </ng-template>
+    </p-dialog>
+
     <p-toast />
     <p-confirmDialog />
   `,
@@ -307,13 +476,16 @@ import { Property, CreatePropertyRequest, SetPropertyRatesRequest } from '../cor
 })
 export class PropertiesPage implements OnInit {
   readonly propertyService = inject(PropertyService);
+  readonly sharingService = inject(PropertySharingService);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
 
   showPropertyDialog = false;
   showRatesDialog = false;
+  showCollaboratorsDialog = false;
   selectedProperty = signal<Property | null>(null);
   isEditMode = signal(false);
+  inviteEmail = '';
 
   propertyForm = {
     name: '',
@@ -488,6 +660,87 @@ export class PropertiesPage implements OnInit {
             severity: 'error',
             summary: 'Error',
             detail: this.propertyService.error() || 'Failed to delete property.'
+          });
+        }
+      }
+    });
+  }
+
+  async openCollaboratorsDialog(property: Property): Promise<void> {
+    this.selectedProperty.set(property);
+    this.inviteEmail = '';
+    this.sharingService.clearCollaborators();
+    this.showCollaboratorsDialog = true;
+    await this.sharingService.loadCollaborators(property.id);
+  }
+
+  closeCollaboratorsDialog(): void {
+    this.showCollaboratorsDialog = false;
+    this.selectedProperty.set(null);
+    this.inviteEmail = '';
+    this.sharingService.clearCollaborators();
+  }
+
+  async inviteCollaborator(): Promise<void> {
+    if (!this.selectedProperty() || !this.inviteEmail.trim()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Validation Error',
+        detail: 'Please enter an email address.'
+      });
+      return;
+    }
+
+    const success = await this.sharingService.inviteCollaborator(
+      this.selectedProperty()!.id,
+      { email: this.inviteEmail.trim() }
+    );
+
+    if (success) {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Invitation sent successfully.'
+      });
+      this.inviteEmail = '';
+    } else {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: this.sharingService.error() || 'Failed to send invitation.'
+      });
+    }
+  }
+
+  confirmRevokeAccess(collaborator: { userId: string | null; name: string | null; email: string | null }): void {
+    if (!collaborator.userId) return;
+
+    const displayName = collaborator.name || collaborator.email || 'this user';
+
+    this.confirmationService.confirm({
+      message: `Are you sure you want to remove ${displayName}'s access to this property?`,
+      header: 'Confirm Remove Access',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Remove',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: async () => {
+        const success = await this.sharingService.revokeAccess(
+          this.selectedProperty()!.id,
+          collaborator.userId!
+        );
+
+        if (success) {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Access removed successfully.'
+          });
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: this.sharingService.error() || 'Failed to remove access.'
           });
         }
       }

@@ -1,9 +1,12 @@
 using FlatRate.Application;
+using FlatRate.Application.Common;
+using FlatRate.Application.Users.Commands.EnsureUserExists;
 using FlatRate.Infrastructure;
 using FlatRate.Infrastructure.Persistence;
 using FlatRate.Web.Auth;
 using FlatRate.Web.Endpoints;
 using FlatRate.Web.Services;
+using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -19,6 +22,10 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 // Add PDF generation service
 builder.Services.AddScoped<InvoicePdfService>();
+
+// Add current user service
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 // Authentication setup
 var isDevelopment = builder.Environment.IsDevelopment();
@@ -63,8 +70,9 @@ if (isDevelopment)
 // Add Google authentication if configured
 var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
 var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+var googleConfigured = !string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret);
 
-if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
+if (googleConfigured)
 {
     authBuilder.AddGoogle(options =>
     {
@@ -73,6 +81,9 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
         options.CallbackPath = "/api/auth/google-callback";
     });
 }
+
+// Store whether Google is configured for use in endpoints
+builder.Services.AddSingleton(new AuthConfiguration { GoogleConfigured = googleConfigured });
 
 builder.Services.AddAuthorization();
 
@@ -103,12 +114,19 @@ app.MapGet("/api/health", () => Results.Ok(new { status = "healthy", timestamp =
 // API endpoints
 app.MapPropertyEndpoints();
 app.MapBillEndpoints();
+app.MapPropertySharingEndpoints();
 
 // Auth endpoints
-app.MapGet("/api/auth/login", (HttpContext context) =>
+app.MapGet("/api/auth/login", (HttpContext context, AuthConfiguration authConfig) =>
 {
     var returnUrl = context.Request.Query["returnUrl"].FirstOrDefault() ?? "/";
-    return Results.Challenge(new AuthenticationProperties { RedirectUri = returnUrl }, [GoogleDefaults.AuthenticationScheme]);
+
+    // Use Google if configured, otherwise use MockAuth in development
+    var scheme = authConfig.GoogleConfigured
+        ? GoogleDefaults.AuthenticationScheme
+        : MockAuthenticationOptions.Scheme;
+
+    return Results.Challenge(new AuthenticationProperties { RedirectUri = returnUrl }, [scheme]);
 });
 
 app.MapGet("/api/auth/logout", async (HttpContext context) =>
@@ -117,18 +135,31 @@ app.MapGet("/api/auth/logout", async (HttpContext context) =>
     return Results.Redirect("/");
 });
 
-app.MapGet("/api/auth/user", (HttpContext context) =>
+app.MapGet("/api/auth/user", async (HttpContext context, IMediator mediator) =>
 {
     if (context.User.Identity?.IsAuthenticated != true)
     {
         return Results.Unauthorized();
     }
 
+    var googleId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var name = context.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "Unknown";
+    var email = context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+
+    if (string.IsNullOrEmpty(googleId))
+    {
+        return Results.Unauthorized();
+    }
+
+    // Ensure user exists in database (creates if new, updates last login if existing)
+    var userId = await mediator.Send(new EnsureUserExistsCommand(googleId, email, name));
+
     return Results.Ok(new
     {
-        id = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
-        name = context.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value,
-        email = context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+        id = userId,
+        googleId = googleId,
+        name = name,
+        email = email
     });
 }).RequireAuthorization();
 

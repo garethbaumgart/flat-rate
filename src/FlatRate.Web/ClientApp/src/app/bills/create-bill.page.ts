@@ -31,10 +31,10 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
   ],
   providers: [MessageService],
   template: `
-    <div class="p-4 md:p-8 max-w-4xl mx-auto">
-      <div class="mb-6">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Create Bill</h1>
-        <p class="text-gray-600 mt-1">Generate a new utility bill</p>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="mb-8">
+        <h1 class="text-2xl md:text-3xl font-bold" style="color: var(--color-text-primary);">Create Bill</h1>
+        <p style="color: var(--color-text-secondary);" class="mt-1">Generate a new utility bill</p>
       </div>
 
       <form (ngSubmit)="onSubmit()" class="flex flex-col gap-6">
@@ -42,7 +42,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
         <p-card header="Property">
           <div class="flex flex-col gap-4">
             <div class="flex flex-col gap-2">
-              <label for="property" class="font-medium">Select Property *</label>
+              <label for="property" class="font-medium" style="color: var(--color-text-primary);">Select Property *</label>
               <p-select
                 id="property"
                 [options]="propertyOptions()"
@@ -56,8 +56,8 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
               />
             </div>
             @if (selectedProperty()) {
-              <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-                <strong>{{ selectedProperty()?.name }}</strong><br>
+              <div class="text-sm p-3 rounded-lg" style="background: var(--color-bg-tertiary); color: var(--color-text-secondary);">
+                <strong style="color: var(--color-text-primary);">{{ selectedProperty()?.name }}</strong><br>
                 {{ selectedProperty()?.address }}
               </div>
             }
@@ -68,7 +68,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
         <p-card header="Billing Period">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="flex flex-col gap-2">
-              <label for="periodStart" class="font-medium">Period Start *</label>
+              <label for="periodStart" class="font-medium" style="color: var(--color-text-primary);">Period Start *</label>
               <p-datepicker
                 id="periodStart"
                 [(ngModel)]="periodStart"
@@ -79,7 +79,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
               />
             </div>
             <div class="flex flex-col gap-2">
-              <label for="periodEnd" class="font-medium">Period End *</label>
+              <label for="periodEnd" class="font-medium" style="color: var(--color-text-primary);">Period End *</label>
               <p-datepicker
                 id="periodEnd"
                 [(ngModel)]="periodEnd"
@@ -97,7 +97,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
           <div class="flex flex-col gap-6">
             <!-- Electricity -->
             <div>
-              <h4 class="font-medium text-lg mb-3">Electricity (kWh)</h4>
+              <h4 class="font-medium text-lg mb-3" style="color: var(--color-text-primary);">Electricity (kWh)</h4>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="flex flex-col gap-2">
                   <label for="elecOpening" class="text-sm">Opening Reading</label>
@@ -124,8 +124,8 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
                   />
                 </div>
                 <div class="flex flex-col gap-2">
-                  <label class="text-sm">Units Used</label>
-                  <div class="p-3 bg-gray-100 rounded font-medium">
+                  <label class="text-sm" style="color: var(--color-text-secondary);">Units Used</label>
+                  <div class="p-3 rounded font-medium" style="background: var(--color-bg-tertiary); color: var(--color-text-primary);">
                     {{ preview().electricityUnits | number:'1.2-2' }} kWh
                   </div>
                 </div>
@@ -136,7 +136,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
 
             <!-- Water -->
             <div>
-              <h4 class="font-medium text-lg mb-3">Water (kL)</h4>
+              <h4 class="font-medium text-lg mb-3" style="color: var(--color-text-primary);">Water (kL)</h4>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="flex flex-col gap-2">
                   <label for="waterOpening" class="text-sm">Opening Reading</label>
@@ -163,8 +163,8 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
                   />
                 </div>
                 <div class="flex flex-col gap-2">
-                  <label class="text-sm">Units Used</label>
-                  <div class="p-3 bg-gray-100 rounded font-medium">
+                  <label class="text-sm" style="color: var(--color-text-secondary);">Units Used</label>
+                  <div class="p-3 rounded font-medium" style="background: var(--color-bg-tertiary); color: var(--color-text-primary);">
                     {{ preview().waterUnits | number:'1.2-2' }} kL
                   </div>
                 </div>
@@ -175,7 +175,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
 
             <!-- Sanitation -->
             <div>
-              <h4 class="font-medium text-lg mb-3">Sanitation (kL)</h4>
+              <h4 class="font-medium text-lg mb-3" style="color: var(--color-text-primary);">Sanitation (kL)</h4>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="flex flex-col gap-2">
                   <label for="sanitationOpening" class="text-sm">Opening Reading</label>
@@ -202,8 +202,8 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
                   />
                 </div>
                 <div class="flex flex-col gap-2">
-                  <label class="text-sm">Units Used</label>
-                  <div class="p-3 bg-gray-100 rounded font-medium">
+                  <label class="text-sm" style="color: var(--color-text-secondary);">Units Used</label>
+                  <div class="p-3 rounded font-medium" style="background: var(--color-bg-tertiary); color: var(--color-text-primary);">
                     {{ preview().sanitationUnits | number:'1.2-2' }} kL
                   </div>
                 </div>
@@ -214,7 +214,7 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
 
         <!-- Tariff Rates -->
         <p-card header="Tariff Rates">
-          <p class="text-sm text-gray-600 mb-4">
+          <p class="text-sm mb-4" style="color: var(--color-text-secondary);">
             @if (selectedProperty()?.defaultElectricityRate !== null) {
               Rates pre-filled from property defaults. You can adjust them for this bill.
             } @else {
@@ -329,39 +329,40 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
         </p-card>
 
         <!-- Cost Preview -->
-        <p-card header="Cost Preview" styleClass="bg-primary-50">
+        <div class="rounded-xl border p-6" style="background: var(--color-accent-bg); border-color: var(--color-border);">
+          <h3 class="text-lg font-semibold mb-4" style="color: var(--color-text-primary);">Cost Preview</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <div class="flex justify-between py-2">
-                <span class="text-gray-600">Electricity:</span>
-                <span class="font-medium">R {{ preview().electricityCost | number:'1.2-2' }}</span>
+                <span style="color: var(--color-text-secondary);">Electricity:</span>
+                <span class="font-medium" style="color: var(--color-text-primary);">R {{ preview().electricityCost | number:'1.2-2' }}</span>
               </div>
               <div class="flex justify-between py-2">
-                <span class="text-gray-600">Water:</span>
-                <span class="font-medium">R {{ preview().waterCost | number:'1.2-2' }}</span>
+                <span style="color: var(--color-text-secondary);">Water:</span>
+                <span class="font-medium" style="color: var(--color-text-primary);">R {{ preview().waterCost | number:'1.2-2' }}</span>
               </div>
               <div class="flex justify-between py-2">
-                <span class="text-gray-600">Sanitation:</span>
-                <span class="font-medium">R {{ preview().sanitationCost | number:'1.2-2' }}</span>
+                <span style="color: var(--color-text-secondary);">Sanitation:</span>
+                <span class="font-medium" style="color: var(--color-text-primary);">R {{ preview().sanitationCost | number:'1.2-2' }}</span>
               </div>
             </div>
             <div>
               <div class="flex justify-between py-2">
-                <span class="text-gray-600">Subtotal:</span>
-                <span class="font-medium">R {{ preview().subtotal | number:'1.2-2' }}</span>
+                <span style="color: var(--color-text-secondary);">Subtotal:</span>
+                <span class="font-medium" style="color: var(--color-text-primary);">R {{ preview().subtotal | number:'1.2-2' }}</span>
               </div>
               <div class="flex justify-between py-2">
-                <span class="text-gray-600">VAT (15%):</span>
-                <span class="font-medium">R {{ preview().vatAmount | number:'1.2-2' }}</span>
+                <span style="color: var(--color-text-secondary);">VAT (15%):</span>
+                <span class="font-medium" style="color: var(--color-text-primary);">R {{ preview().vatAmount | number:'1.2-2' }}</span>
               </div>
               <p-divider />
               <div class="flex justify-between py-2 text-lg">
-                <span class="font-bold">Total:</span>
-                <span class="font-bold text-primary">R {{ preview().total | number:'1.2-2' }}</span>
+                <span class="font-bold" style="color: var(--color-text-primary);">Total:</span>
+                <span class="font-bold" style="color: var(--color-accent);">R {{ preview().total | number:'1.2-2' }}</span>
               </div>
             </div>
           </div>
-        </p-card>
+        </div>
 
         <!-- Actions -->
         <div class="flex justify-end gap-3">

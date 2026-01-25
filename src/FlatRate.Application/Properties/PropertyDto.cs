@@ -1,3 +1,5 @@
+using FlatRate.Domain.Aggregates.Properties;
+
 namespace FlatRate.Application.Properties;
 
 /// <summary>
@@ -15,4 +17,5 @@ public sealed record PropertyDto(
     decimal? DefaultSanitationRateTier2,
     decimal? DefaultSanitationRateTier3,
     DateTime CreatedAt,
-    DateTime? UpdatedAt);
+    DateTime? UpdatedAt,
+    PropertyRole CurrentUserRole);
