@@ -2,6 +2,13 @@
 
 Monthly utility billing for rental properties. Generate electricity, water, and sanitation invoices with tiered tariff calculations and PDF export.
 
+## Features
+
+- **Multi-user property sharing**: Share properties with family members via Google OAuth login
+- **Role-based access**: Property owners can invite collaborators (Editors) who can view and create bills
+- **Tiered tariff calculations**: Water and sanitation use 3-tier pricing
+- **PDF invoice export**: Generate professional invoices for tenants
+
 ## Tech Stack
 
 - **Backend**: .NET 10, Entity Framework Core, PostgreSQL
