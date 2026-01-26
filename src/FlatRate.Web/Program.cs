@@ -5,6 +5,7 @@ using FlatRate.Infrastructure;
 using FlatRate.Infrastructure.Persistence;
 using FlatRate.Web.Auth;
 using FlatRate.Web.Endpoints;
+using FlatRate.Web.Middleware;
 using FlatRate.Web.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
@@ -76,8 +77,8 @@ if (googleConfigured)
 {
     authBuilder.AddGoogle(options =>
     {
-        options.ClientId = googleClientId;
-        options.ClientSecret = googleClientSecret;
+        options.ClientId = googleClientId!;
+        options.ClientSecret = googleClientSecret!;
         options.CallbackPath = "/api/auth/google-callback";
     });
 }
@@ -106,6 +107,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseAuthentication();
+app.UseUserResolution(); // Resolve Google ID to internal user ID
 app.UseAuthorization();
 
 // Health check endpoint (no auth required)
@@ -144,11 +146,17 @@ app.MapGet("/api/auth/user", async (HttpContext context, IMediator mediator) =>
 
     var googleId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
     var name = context.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "Unknown";
-    var email = context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+    var email = context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
 
     if (string.IsNullOrEmpty(googleId))
     {
         return Results.Unauthorized();
+    }
+
+    // Email is required - OAuth providers that don't provide email are not supported
+    if (string.IsNullOrWhiteSpace(email))
+    {
+        return Results.BadRequest(new { error = "Email address is required. Please use an account that provides email access." });
     }
 
     // Ensure user exists in database (creates if new, updates last login if existing)

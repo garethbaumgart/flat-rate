@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using FlatRate.Application.Common;
 using FlatRate.Domain.Aggregates.Properties;
 using FlatRate.Domain.Aggregates.Users;
@@ -31,11 +32,21 @@ public sealed class InviteToPropertyCommandHandler : IRequestHandler<InviteToPro
         _currentUserService = currentUserService;
     }
 
+    private static readonly Regex EmailRegex = new(
+        @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     public async Task<InviteToPropertyResult> Handle(InviteToPropertyCommand request, CancellationToken cancellationToken)
     {
         if (_currentUserService.UserId is null)
         {
             return new InviteToPropertyResult(false, "User must be authenticated.");
+        }
+
+        // Validate email format
+        if (string.IsNullOrWhiteSpace(request.Email) || !EmailRegex.IsMatch(request.Email.Trim()))
+        {
+            return new InviteToPropertyResult(false, "Please enter a valid email address.");
         }
 
         // Verify property exists

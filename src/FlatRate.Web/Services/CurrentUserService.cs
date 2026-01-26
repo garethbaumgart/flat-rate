@@ -1,44 +1,37 @@
 using System.Security.Claims;
 using FlatRate.Application.Common;
-using FlatRate.Domain.Aggregates.Users;
 
 namespace FlatRate.Web.Services;
 
 /// <summary>
 /// Implementation of ICurrentUserService that extracts user info from HTTP context.
+/// The UserId is populated by UserResolutionMiddleware at the start of each request.
 /// </summary>
 public sealed class CurrentUserService : ICurrentUserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IServiceProvider _serviceProvider;
-    private Guid? _cachedUserId;
-    private bool _userIdLookedUp;
 
-    public CurrentUserService(IHttpContextAccessor httpContextAccessor, IServiceProvider serviceProvider)
+    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
-        _serviceProvider = serviceProvider;
     }
 
+    /// <summary>
+    /// Gets the internal user ID. This is populated by UserResolutionMiddleware.
+    /// </summary>
     public Guid? UserId
     {
         get
         {
-            if (_userIdLookedUp)
-                return _cachedUserId;
+            var claim = _httpContextAccessor.HttpContext?.User
+                .FindFirst("internal_user_id")?.Value;
 
-            _userIdLookedUp = true;
+            if (claim is not null && Guid.TryParse(claim, out var userId))
+            {
+                return userId;
+            }
 
-            if (GoogleId is null)
-                return null;
-
-            // Look up user by Google ID
-            using var scope = _serviceProvider.CreateScope();
-            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-            var user = userRepository.GetByGoogleIdAsync(GoogleId).GetAwaiter().GetResult();
-            _cachedUserId = user?.Id;
-
-            return _cachedUserId;
+            return null;
         }
     }
 
