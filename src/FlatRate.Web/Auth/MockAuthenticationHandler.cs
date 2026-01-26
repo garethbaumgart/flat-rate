@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
 
 namespace FlatRate.Web.Auth;
@@ -42,5 +43,24 @@ public class MockAuthenticationHandler(
         var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
         return Task.FromResult(AuthenticateResult.Success(ticket));
+    }
+
+    protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+    {
+        // In development without Google configured, auto-sign-in as a mock user
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "dev-user-1"),
+            new Claim(ClaimTypes.Name, "Developer"),
+            new Claim(ClaimTypes.Email, "dev@flatrate.local")
+        };
+
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+
+        await Context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, properties);
+
+        var returnUrl = properties.RedirectUri ?? "/";
+        Context.Response.Redirect(returnUrl);
     }
 }

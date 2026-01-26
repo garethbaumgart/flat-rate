@@ -1,2 +1,375 @@
-@import "tailwindcss";
+@import "tailwindcss" source("./app");
 @import "primeicons/primeicons.css";
+
+/* Professional Dark Theme - CSS Custom Properties */
+:root {
+  /* Light mode colors */
+  --color-bg-primary: #f8fafc;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f1f5f9;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ffffff;
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
+  --color-text-muted: #94a3b8;
+
+  --color-border: #e2e8f0;
+  --color-border-light: #f1f5f9;
+
+  /* Accent colors - Teal */
+  --color-accent: #14b8a6;
+  --color-accent-hover: #0d9488;
+  --color-accent-light: #5eead4;
+  --color-accent-bg: rgba(20, 184, 166, 0.1);
+
+  /* Status colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Glass effect */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+/* Dark mode colors */
+.dark {
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-bg-tertiary: #334155;
+  --color-bg-card: #1e293b;
+  --color-bg-elevated: #334155;
+
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-tertiary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  --color-border: #334155;
+  --color-border-light: #1e293b;
+
+  /* Accent colors - Teal (brighter for dark mode) */
+  --color-accent: #2dd4bf;
+  --color-accent-hover: #5eead4;
+  --color-accent-light: #99f6e4;
+  --color-accent-bg: rgba(45, 212, 191, 0.15);
+
+  /* Shadows for dark mode */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+
+  /* Glass effect for dark mode */
+  --glass-bg: rgba(30, 41, 59, 0.8);
+  --glass-border: rgba(51, 65, 85, 0.5);
+}
+
+/* Base styles */
+html {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom Tailwind theme extensions using @theme */
+@theme {
+  --color-primary: var(--color-accent);
+  --color-primary-hover: var(--color-accent-hover);
+  --color-surface: var(--color-bg-card);
+  --color-surface-secondary: var(--color-bg-secondary);
+  --color-surface-elevated: var(--color-bg-elevated);
+}
+
+/* PrimeNG Theme Overrides */
+:root {
+  /* Primary color */
+  --p-primary-50: #f0fdfa;
+  --p-primary-100: #ccfbf1;
+  --p-primary-200: #99f6e4;
+  --p-primary-300: #5eead4;
+  --p-primary-400: #2dd4bf;
+  --p-primary-500: #14b8a6;
+  --p-primary-600: #0d9488;
+  --p-primary-700: #0f766e;
+  --p-primary-800: #115e59;
+  --p-primary-900: #134e4a;
+  --p-primary-950: #042f2e;
+
+  /* Surface colors for PrimeNG */
+  --p-surface-0: var(--color-bg-secondary);
+  --p-surface-50: var(--color-bg-tertiary);
+  --p-surface-100: var(--color-bg-tertiary);
+  --p-surface-200: var(--color-border);
+  --p-surface-300: var(--color-border);
+  --p-surface-400: var(--color-text-muted);
+  --p-surface-500: var(--color-text-tertiary);
+  --p-surface-600: var(--color-text-secondary);
+  --p-surface-700: var(--color-text-primary);
+  --p-surface-800: var(--color-text-primary);
+  --p-surface-900: var(--color-text-primary);
+
+  /* Text colors */
+  --p-text-color: var(--color-text-primary);
+  --p-text-muted-color: var(--color-text-secondary);
+
+  /* Content background */
+  --p-content-background: var(--color-bg-card);
+  --p-content-border-color: var(--color-border);
+}
+
+.dark {
+  --p-primary-500: #2dd4bf;
+  --p-primary-600: #14b8a6;
+  --p-primary-400: #5eead4;
+}
+
+/* Card styles */
+.p-card {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.dark .p-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+}
+
+/* Button styles */
+.p-button {
+  border-radius: 0.5rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.p-button:not(.p-button-text):not(.p-button-outlined):not(.p-button-secondary):not(.p-button-success):not(.p-button-info):not(.p-button-warn):not(.p-button-danger) {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%) !important;
+  border: none !important;
+}
+
+.p-button:not(.p-button-text):not(.p-button-outlined):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4) !important;
+}
+
+/* Table styles */
+.p-datatable {
+  background: transparent !important;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-secondary) !important;
+  border-color: var(--color-border) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.05em !important;
+}
+
+.p-datatable .p-datatable-tbody > tr {
+  background: var(--color-bg-card) !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  background: var(--color-accent-bg) !important;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Dialog styles */
+.p-dialog {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 1rem !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.dark .p-dialog {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border) !important;
+}
+
+.p-dialog .p-dialog-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+  padding: 1.25rem 1.5rem !important;
+}
+
+.p-dialog .p-dialog-content {
+  background: transparent !important;
+  color: var(--color-text-primary) !important;
+  padding: 1.5rem !important;
+}
+
+.p-dialog .p-dialog-footer {
+  background: transparent !important;
+  border-top: 1px solid var(--color-border) !important;
+  padding: 1rem 1.5rem !important;
+}
+
+/* Input styles */
+.p-inputtext,
+.p-select,
+.p-datepicker,
+.p-inputnumber-input {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 0.5rem !important;
+  color: var(--color-text-primary) !important;
+  transition: all 0.2s ease !important;
+}
+
+.p-inputtext:focus,
+.p-select:focus,
+.p-inputnumber-input:focus {
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 3px var(--color-accent-bg) !important;
+}
+
+/* Toast styles */
+.p-toast {
+  opacity: 1 !important;
+}
+
+.p-toast .p-toast-message {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.dark .p-toast .p-toast-message {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Confirm dialog styles */
+.p-confirm-dialog {
+  border-radius: 1rem !important;
+}
+
+/* Select dropdown styles */
+.p-select-overlay {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.dark .p-select-overlay {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(10px);
+}
+
+.p-select-option {
+  color: var(--color-text-primary) !important;
+}
+
+.p-select-option:hover {
+  background: var(--color-accent-bg) !important;
+}
+
+/* Divider styles */
+.p-divider {
+  border-color: var(--color-border) !important;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* Utility classes for theme */
+.bg-surface {
+  background-color: var(--color-bg-card);
+}
+
+.bg-surface-secondary {
+  background-color: var(--color-bg-secondary);
+}
+
+.bg-surface-elevated {
+  background-color: var(--color-bg-elevated);
+}
+
+.text-primary {
+  color: var(--color-text-primary);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-accent {
+  color: var(--color-accent);
+}
+
+.border-theme {
+  border-color: var(--color-border);
+}
+
+/* Glass card effect */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+}
+
+/* Gradient accent background */
+.gradient-accent {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+}
+
+/* Animation for theme transitions */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+
+/* Disable transitions for elements that shouldn't animate */
+.no-transition,
+.no-transition * {
+  transition: none !important;
+}

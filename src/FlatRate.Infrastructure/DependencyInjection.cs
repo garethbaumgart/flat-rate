@@ -1,5 +1,6 @@
 using FlatRate.Domain.Aggregates.Bills;
 using FlatRate.Domain.Aggregates.Properties;
+using FlatRate.Domain.Aggregates.Users;
 using FlatRate.Domain.Repositories;
 using FlatRate.Infrastructure.Persistence;
 using FlatRate.Infrastructure.Persistence.Repositories;
@@ -20,7 +21,9 @@ public static class DependencyInjection
 
         // Register repositories
         services.AddScoped<IPropertyRepository, PropertyRepository>();
+        services.AddScoped<IPropertyAccessRepository, PropertyAccessRepository>();
         services.AddScoped<IBillRepository, BillRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;

@@ -3,11 +3,22 @@ import { test, expect } from '@playwright/test';
 /**
  * API-level E2E tests that verify the backend endpoints work correctly.
  * These tests don't require the Angular frontend to be served.
+ * Tests run serially to ensure consistent state.
  */
+test.describe.configure({ mode: 'serial' });
+
 test.describe('API Endpoints', () => {
   const mockAuthHeader = { 'X-Mock-User': 'api-test-user' };
   let createdPropertyId: string;
   let createdBillId: string;
+
+  // Helper to ensure user exists before making authenticated API calls
+  async function ensureUserExists(request: any) {
+    const response = await request.get('/api/auth/user', {
+      headers: mockAuthHeader
+    });
+    expect(response.status()).toBe(200);
+  }
 
   test('health endpoint should return healthy status', async ({ request }) => {
     const response = await request.get('/api/health');
@@ -19,6 +30,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should create a property', async ({ request }) => {
+    await ensureUserExists(request);
+
     const response = await request.post('/api/properties', {
       headers: mockAuthHeader,
       data: {
@@ -41,6 +54,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should list properties', async ({ request }) => {
+    await ensureUserExists(request);
+
     const response = await request.get('/api/properties', {
       headers: mockAuthHeader
     });
@@ -51,6 +66,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should get property by id', async ({ request }) => {
+    await ensureUserExists(request);
+
     // First create a property
     const createResponse = await request.post('/api/properties', {
       headers: mockAuthHeader,
@@ -82,6 +99,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should create a bill', async ({ request }) => {
+    await ensureUserExists(request);
+
     // First create a property
     const propertyResponse = await request.post('/api/properties', {
       headers: mockAuthHeader,
@@ -131,6 +150,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should list bills', async ({ request }) => {
+    await ensureUserExists(request);
+
     const response = await request.get('/api/bills', {
       headers: mockAuthHeader
     });
@@ -141,6 +162,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should get bill by id', async ({ request }) => {
+    await ensureUserExists(request);
+
     // First create a property
     const propertyResponse = await request.post('/api/properties', {
       headers: mockAuthHeader,
@@ -157,6 +180,7 @@ test.describe('API Endpoints', () => {
       }
     });
 
+    expect(propertyResponse.status()).toBe(201);
     const property = await propertyResponse.json();
 
     // Create a bill
@@ -182,6 +206,7 @@ test.describe('API Endpoints', () => {
       }
     });
 
+    expect(billResponse.status()).toBe(201);
     const bill = await billResponse.json();
 
     // Get the bill by ID
@@ -196,6 +221,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should download bill PDF', async ({ request }) => {
+    await ensureUserExists(request);
+
     // First create a property
     const propertyResponse = await request.post('/api/properties', {
       headers: mockAuthHeader,
@@ -249,6 +276,8 @@ test.describe('API Endpoints', () => {
   });
 
   test('should delete a bill', async ({ request }) => {
+    await ensureUserExists(request);
+
     // First create a property
     const propertyResponse = await request.post('/api/properties', {
       headers: mockAuthHeader,

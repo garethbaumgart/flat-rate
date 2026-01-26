@@ -1,3 +1,5 @@
+export type PropertyRole = 'Owner' | 'Editor';
+
 export interface Property {
   id: string;
   name: string;
@@ -11,6 +13,7 @@ export interface Property {
   defaultSanitationRateTier3: number | null;
   createdAt: string;
   updatedAt: string | null;
+  currentUserRole: PropertyRole;
 }
 
 export interface CreatePropertyRequest {

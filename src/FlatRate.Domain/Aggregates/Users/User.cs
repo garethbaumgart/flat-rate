@@ -1,0 +1,58 @@
+using FlatRate.Domain.Common;
+
+namespace FlatRate.Domain.Aggregates.Users;
+
+/// <summary>
+/// Represents an application user authenticated via Google OAuth.
+/// </summary>
+public sealed class User : AggregateRoot
+{
+    public string GoogleId { get; private set; } = string.Empty;
+    public string Email { get; private set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
+    public DateTime CreatedAt { get; private set; }
+    public DateTime LastLoginAt { get; private set; }
+
+    private User() : base()
+    {
+    }
+
+    public static User Create(string googleId, string email, string name)
+    {
+        if (string.IsNullOrWhiteSpace(googleId))
+            throw new ArgumentException("Google ID cannot be empty.", nameof(googleId));
+
+        if (string.IsNullOrWhiteSpace(email))
+            throw new ArgumentException("Email cannot be empty.", nameof(email));
+
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name cannot be empty.", nameof(name));
+
+        var now = DateTime.UtcNow;
+        return new User
+        {
+            GoogleId = googleId.Trim(),
+            Email = email.Trim().ToLowerInvariant(),
+            Name = name.Trim(),
+            CreatedAt = now,
+            LastLoginAt = now
+        };
+    }
+
+    public void UpdateLastLogin()
+    {
+        LastLoginAt = DateTime.UtcNow;
+    }
+
+    public void UpdateProfile(string name, string email)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name cannot be empty.", nameof(name));
+
+        if (string.IsNullOrWhiteSpace(email))
+            throw new ArgumentException("Email cannot be empty.", nameof(email));
+
+        Name = name.Trim();
+        Email = email.Trim().ToLowerInvariant();
+    }
+}

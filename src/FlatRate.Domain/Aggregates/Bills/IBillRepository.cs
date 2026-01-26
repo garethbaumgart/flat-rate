@@ -7,6 +7,7 @@ public interface IBillRepository
 {
     Task<Bill?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Bill>> GetByPropertyIdAsync(Guid propertyId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Bill>> GetByPropertyIdsAsync(IEnumerable<Guid> propertyIds, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Bill>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<string> GetNextInvoiceNumberAsync(CancellationToken cancellationToken = default);
     Task AddAsync(Bill bill, CancellationToken cancellationToken = default);

@@ -1,3 +1,4 @@
+using FlatRate.Application.Common;
 using FlatRate.Domain.Aggregates.Properties;
 using FlatRate.Domain.Repositories;
 using MediatR;
@@ -11,18 +12,35 @@ public sealed class UpdatePropertyCommandHandler : IRequestHandler<UpdatePropert
 {
     private readonly IPropertyRepository _propertyRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
-    public UpdatePropertyCommandHandler(IPropertyRepository propertyRepository, IUnitOfWork unitOfWork)
+    public UpdatePropertyCommandHandler(
+        IPropertyRepository propertyRepository,
+        IUnitOfWork unitOfWork,
+        ICurrentUserService currentUserService)
     {
         _propertyRepository = propertyRepository;
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<bool> Handle(UpdatePropertyCommand request, CancellationToken cancellationToken)
     {
+        if (_currentUserService.UserId is null)
+        {
+            return false;
+        }
+
         var property = await _propertyRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (property is null)
+        {
+            return false;
+        }
+
+        // Verify user has access to this property
+        var hasAccess = await _propertyRepository.UserHasAccessAsync(request.Id, _currentUserService.UserId.Value, cancellationToken);
+        if (!hasAccess)
         {
             return false;
         }

@@ -31,6 +31,16 @@ public sealed partial class BillRepository : IBillRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Bill>> GetByPropertyIdsAsync(IEnumerable<Guid> propertyIds, CancellationToken cancellationToken = default)
+    {
+        var propertyIdList = propertyIds.ToList();
+        return await _context.Bills
+            .AsNoTracking()
+            .Where(b => propertyIdList.Contains(b.PropertyId))
+            .OrderByDescending(b => b.PeriodStart)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Bill>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Bills
