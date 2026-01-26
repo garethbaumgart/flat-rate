@@ -176,6 +176,7 @@ test.describe('API Endpoints', () => {
       }
     });
 
+    expect(propertyResponse.status()).toBe(201);
     const property = await propertyResponse.json();
 
     // Create a bill
@@ -201,6 +202,7 @@ test.describe('API Endpoints', () => {
       }
     });
 
+    expect(billResponse.status()).toBe(201);
     const bill = await billResponse.json();
 
     // Get the bill by ID
