@@ -3,7 +3,10 @@ import { test, expect } from '@playwright/test';
 /**
  * API-level E2E tests that verify the backend endpoints work correctly.
  * These tests don't require the Angular frontend to be served.
+ * Tests run serially to ensure consistent state.
  */
+test.describe.configure({ mode: 'serial' });
+
 test.describe('API Endpoints', () => {
   const mockAuthHeader = { 'X-Mock-User': 'api-test-user' };
   let createdPropertyId: string;
@@ -11,9 +14,10 @@ test.describe('API Endpoints', () => {
 
   // Helper to ensure user exists before making authenticated API calls
   async function ensureUserExists(request: any) {
-    await request.get('/api/auth/user', {
+    const response = await request.get('/api/auth/user', {
       headers: mockAuthHeader
     });
+    expect(response.status()).toBe(200);
   }
 
   test('health endpoint should return healthy status', async ({ request }) => {
