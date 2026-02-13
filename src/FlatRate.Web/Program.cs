@@ -91,46 +91,36 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Apply database schema on startup
+// Apply database migrations on startup
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<FlatRateDbContext>();
-    if (app.Environment.IsDevelopment())
+    const int maxRetries = 5;
+    for (var i = 0; i < maxRetries; i++)
     {
-        dbContext.Database.EnsureCreated();
-    }
-    else
-    {
-        // Retry logic for Cloud Run cold starts where DB might not be ready yet
-        const int maxRetries = 5;
-        for (var i = 0; i < maxRetries; i++)
+        try
         {
-            try
-            {
-                dbContext.Database.Migrate();
-                break;
-            }
-            catch (Exception ex) when (i < maxRetries - 1)
-            {
-                app.Logger.LogWarning(ex, "Database migration attempt {Attempt}/{Max} failed, retrying...", i + 1, maxRetries);
-                Thread.Sleep(3000);
-            }
+            dbContext.Database.Migrate();
+            break;
+        }
+        catch (Exception ex) when (i < maxRetries - 1)
+        {
+            app.Logger.LogWarning(ex, "Database migration attempt {Attempt}/{Max} failed, retrying...", i + 1, maxRetries);
+            Thread.Sleep(3000);
         }
     }
 }
 
-// Serve static files from wwwroot
-app.UseStaticFiles();
-
-// Serve static files from wwwroot/browser (Angular 21 output)
-var browserPath = Path.Combine(app.Environment.WebRootPath, "browser");
-var angularAppExists = Directory.Exists(browserPath);
+// Serve static files from wwwroot/browser (Angular 21 output) when available
+var webRootPath = app.Environment.WebRootPath;
+var angularAppExists = !string.IsNullOrEmpty(webRootPath) && Directory.Exists(Path.Combine(webRootPath, "browser"));
 
 if (angularAppExists)
 {
+    app.UseStaticFiles();
     app.UseStaticFiles(new StaticFileOptions
     {
-        FileProvider = new PhysicalFileProvider(browserPath)
+        FileProvider = new PhysicalFileProvider(Path.Combine(webRootPath, "browser"))
     });
 }
 
