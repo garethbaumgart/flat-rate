@@ -7,11 +7,15 @@ description: Create or update a pull request. Use when the user wants to create 
 
 You are creating or updating a pull request. Follow these steps in order.
 
-## Step 1: Check for Uncommitted Changes
+## Step 1: Verify Feature Branch and Check for Uncommitted Changes
 
-Run `git status` to check for uncommitted changes. If there are changes:
-- Stage and commit them with a clear, descriptive message
-- Push to the remote branch
+**Branch protection rules prevent direct pushes to `main`.** All changes must go through a pull request.
+
+1. Run `git branch --show-current` to check which branch you're on
+2. If on `main`, create a feature branch first: `git checkout -b feat/short-description` (use `feat/`, `fix/`, `chore/`, or `docs/` prefix as appropriate)
+3. Run `git status` to check for uncommitted changes. If there are changes:
+   - Stage and commit them with a clear, descriptive message
+   - Push to the remote branch
 
 ## Step 2: Review and Update README.md
 
@@ -24,88 +28,161 @@ Check if any changes in this PR require documentation updates:
 
 If updates are needed, make them and commit before proceeding.
 
-## Step 3: Run Tests
+## Step 3: Build and Test
+
+### 3a: Build
+
+Run `dotnet build src/FlatRate.slnx` to verify the project compiles. If it fails (e.g., missing packages), run `dotnet restore` first, then retry. Fix any compilation errors before proceeding.
+
+### 3b: Run Tests
 
 Run these checks and **ensure they pass**:
 
-1. **Unit tests**: Execute `dotnet test src/FlatRate.slnx` - all tests must pass
-2. **E2E tests**: Execute `cd tests/FlatRate.E2E.Tests && npm test` - all tests must pass
+1. **Unit tests**: Execute `dotnet test src/FlatRate.slnx` — all tests must pass
+2. **E2E tests**:
+   - First ensure the E2E Docker profile is running: `docker compose --profile e2e up -d --wait`
+   - Then execute: `cd src/FlatRate.Web/ClientApp && npm run e2e` — all tests must pass
 
 **STOP if any tests fail.** Fix the failures and re-run until all tests pass. Do not proceed to PR creation with failing tests.
 
-## Step 4: Create the PR
+## Step 4: Self Code Review
 
-Once tests pass:
+Review the full diff against the base branch using `git diff main...HEAD` and look for:
 
-1. Push any remaining commits to the remote branch
-2. Create the PR using `gh pr create`
-
-## Step 5: Continuous CI and Review Monitoring Loop
-
-After the PR is created, **continuously monitor** until ready to merge:
-
-### 5a. Self Code Review
-Review the PR diff using `gh pr diff` and look for:
+### Code Quality
 - Code duplication that could be extracted (DRY principle)
 - Performance improvements without added complexity
 - Patterns that don't match existing codebase conventions
 - Missing null guards or error handling
-- Accessibility issues (missing aria-labels on icon-only buttons)
 
-**Apply good refactoring opportunities** you identify - don't defer them to future PRs unless they require significant architectural changes.
+### Security
+- Missing `rel="noreferrer"` on external links (`target="_blank"`)
+- Unsanitized user input
+- Exposed secrets or credentials
 
-### 5b. Monitor CI Status
-1. Check CI status: `gh pr checks`
-2. If checks are still running, wait 30 seconds and check again
-3. If checks fail:
-   - Review the logs: `gh run view <run-id> --log-failed`
-   - Fix the issues, commit, push
-   - Return to monitoring loop
-4. Check for warnings in annotations:
+### Frontend
+- Race conditions in async service calls (e.g., stale responses overwriting newer ones)
+- Timezone-safe date handling (use `new Date(year, month - 1, day)` for date-only strings, not `new Date(dateString)` which applies timezone offsets)
+- Invalid date guards (check `isNaN(d.getTime())` before using parsed dates)
+- Accessibility issues (missing `aria-label` on icon-only buttons, semantic HTML)
+
+### Backend
+- EF Core: JSON value conversion properties (e.g., `HashSet<Guid>`) cannot use `.Contains()` in LINQ-to-SQL — must filter in memory
+- EF Core: `DbContext` is NOT thread-safe — never use `Task.WhenAll` with multiple repository calls sharing the same scoped DbContext
+- **Migration safety** (if migrations are included):
+  - No migrations that exist in `main` branch were modified (merged migrations are immutable)
+  - New migrations have been reviewed for accuracy (especially renames vs drop+add)
+  - Destructive changes (DROP TABLE, DROP COLUMN) have been evaluated for data loss
+
+**Apply all fixes now.** Don't defer them — fix issues before creating the PR so reviewers see a clean initial diff. Commit fixes before proceeding.
+
+## Step 5: Create the PR
+
+Once tests pass and self-review fixes are committed:
+
+1. Push any remaining commits to the remote branch
+2. Create the PR using `gh pr create`
+
+## Step 6: Browser Validation (While CI Runs)
+
+**Purpose**: Validate UI changes work correctly and capture visual evidence for review.
+
+**Skip this step ONLY for**:
+- Markdown-only PRs (`.md` files only)
+- Backend-only changes with no UI impact
+- Configuration or CI workflow changes
+
+**For PRs with UI changes**:
+
+1. **Start the dev stack**: Run `docker compose --profile dev-stack up -d`
+2. **Wait for startup**: Wait for the app to be available at http://localhost:4201
+3. **Write a Playwright validation script**: Create a script in `src/FlatRate.Web/ClientApp/e2e/` (where Playwright is installed) that uses Playwright to navigate to the app and capture screenshots. For PrimeNG components like dropdowns, interact with them directly (click to open, type to filter, click to select) rather than relying on URL query parameters.
+4. **Capture before/after screenshots** (for refactoring PRs):
+   - If this is a refactoring PR with no expected visual changes, take screenshots BEFORE making changes (from main branch) and AFTER
+   - Compare to verify no unintended visual differences
+   - Include screenshots in the PR description or comments
+5. **Test each UI change**: For every UI-visible change in this PR:
+   - Navigate to the affected area
+   - Verify the change works as expected
+   - **Take a screenshot** of the working feature
+   - Test both light and dark mode if styling is involved (screenshot both)
+   - Check responsive behavior if layout changes are involved
+   - Test keyboard navigation if interactive elements are added
+6. **Add screenshots to PR**:
+   - Use `gh pr comment` to add screenshots showing the UI works
+   - For refactoring: "No visual changes - before/after comparison attached"
+   - For new features: "Feature working as expected - screenshots attached"
+7. **Clean up**: Delete any temporary validation scripts after screenshots are captured
+8. **Fix any issues**: If something doesn't work or looks wrong, fix it, commit, push, and re-run tests
+
+**Screenshot requirements by PR type**:
+| PR Type | Required Screenshots |
+|---------|---------------------|
+| Refactoring (no visual change expected) | Before/after comparison from same view |
+| New UI feature | Feature in action (light + dark mode if styled) |
+| Bug fix with UI impact | Fixed state showing correct behavior |
+| Styling/theming changes | Light mode + dark mode + mobile viewport |
+
+**If UI validation fails**: Fix the issue, commit, push, and restart from Step 3.
+
+## Step 7: Post-PR Monitoring and Review Comments
+
+After the PR is created, **actively monitor** and address feedback:
+
+1. **Wait for CI**: Monitor GitHub Actions for completion using `gh pr checks`
+2. **Check for warnings**: Review action logs AND annotations for any warnings (not just failures)
    - Use `gh api repos/{owner}/{repo}/check-runs/{job_id}/annotations` to fetch annotations
-   - **ALL warnings must be addressed** - either fix or document why not
+   - Common warnings: deprecation notices, bundle size budgets, artifact upload failures, EF Core model validation
+   - **ALL warnings must be addressed** - either fix the issue or update the workflow if it's a false positive
+3. **Monitor for AI reviews**: Actively poll for CodeRabbit and Copilot reviews to complete
+   - **CodeRabbit**: Use `gh pr checks` - wait until CodeRabbit shows "Review completed"
+   - **Copilot**: Use `gh api repos/{owner}/{repo}/pulls/{number}/reviews --jq '.[] | select((.user.login | contains("copilot")) and .state != "DISMISSED") | .state'` to check if Copilot has submitted a review. **Any non-`DISMISSED` state means Copilot has reviewed**; treat `CHANGES_REQUESTED` as blocking feedback you must address.
+   - Alternatively, use `gh pr view <number> --comments` and look for comments from `copilot-pull-request-reviewer[bot]` to understand the feedback associated with a `CHANGES_REQUESTED` or `COMMENTED` review
+   - Keep checking every 5 minutes until BOTH CodeRabbit AND Copilot reviews are complete
+4. **Address all comments immediately**: When comments appear:
+   - Read each comment carefully, including **high-level feedback** in comment bodies (not just line-specific suggestions)
+   - **For line comments (have their own ID)**:
+     - **If addressing**: Add a thumbs up reaction using `gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/reactions -X POST -f content='+1'`, then make the fix
+     - **If not addressing**: Reply to the comment explaining why (must be a strong justification - see below)
+   - **For high-level feedback in PR comments**: Reply to the comment addressing each suggestion
 
-### 5c. Monitor for AI Reviews
-Poll for CodeRabbit and Copilot reviews:
-1. **CodeRabbit**: Use `gh pr checks` - wait until CodeRabbit shows "Review completed"
-2. **Copilot/Sourcery**: Check `gh pr view <number> --comments` for bot comments
-3. If reviews not yet complete, wait 30 seconds and check again
-4. **Keep monitoring** - reviews may come in multiple rounds
+   **IMPORTANT - Batch Review Fixes**:
+   Address ALL comments from a review round before committing. Collect all fixes, apply them, then commit and push once. This minimizes review cycles — each push triggers a new round of AI reviews, so fewer pushes means faster convergence.
 
-### 5d. Address All Comments
-When comments appear from reviewers (human or AI):
-1. Read each comment carefully, including **high-level feedback**
-2. **For line comments**:
-   - **If addressing**: React with thumbs up, then make the fix
-   - **If not addressing**: Reply explaining why
-3. **Apply good refactoring suggestions** when they:
-   - Reduce code duplication (DRY principle)
-   - Improve performance without adding complexity
-   - Follow existing patterns in the codebase
-4. Commit, push, and **return to Step 5b** (CI monitoring loop)
+   **IMPORTANT - No Deferring Valid Comments**:
+   Valid review comments must be addressed in the current PR. Do NOT:
+   - Create follow-up issues for feedback that can be fixed now
+   - Say "will address in a future PR" for straightforward fixes
+   - Defer refactoring suggestions that are clearly improvements
 
-### 5e. Loop Completion Criteria
-Continue the monitoring loop until ALL of these are true:
-- [ ] All CI checks pass (green)
-- [ ] No warnings in CI annotations
-- [ ] CodeRabbit review is complete
-- [ ] Copilot/Sourcery review is complete (or confirmed not enabled)
-- [ ] All review comments have been addressed
+   The only acceptable reasons to not address a comment:
+   - The suggestion is factually incorrect or based on a misunderstanding
+   - The change would require significant architectural work outside PR scope
+   - The suggestion conflicts with an established project pattern (cite the pattern)
+   - The reviewer explicitly marked it as "nit" or "optional"
 
-## Step 6: Automatic Merge
+   If you find yourself wanting to defer, ask: "Can I fix this in under 30 minutes?" If yes, fix it now.
+5. **Verify CI passes**: After all fixes, ensure all checks pass (no warnings in annotations)
+6. **Wait for re-reviews after pushing fixes**: Every time you push new commits (from addressing reviewer comments or any other changes), you MUST restart the review monitoring loop:
+   - Note the SHA of the latest commit you pushed
+   - **Wait for Copilot to re-review the new commit**: Poll using `gh api repos/{owner}/{repo}/pulls/{number}/reviews --jq '.[] | select(.user.login | contains("copilot")) | {state, commit_id: .commit_id}'` and verify a review exists for the latest commit SHA. Copilot reviews against older commits do NOT count.
+   - **Wait for CodeRabbit**: Check `gh pr checks` until CodeRabbit shows "Review completed"
+   - **Polling timeout**: Poll every 2 minutes for up to 10 minutes. If a reviewer has not re-reviewed the latest commit after 10 minutes AND their previous review had no unaddressed comments, proceed to the next step — the reviewer likely has nothing new to add. Only continue waiting past 10 minutes if the reviewer's previous review contained comments that required code changes (i.e., there is a reasonable expectation of a follow-up review).
+   - **Re-fetch ALL line-level comments**: After reviewers have reviewed the latest commit, fetch the full comment list using `gh api repos/{owner}/{repo}/pulls/{number}/comments` and check for any comments posted since your last comment check. Reviewers may post new comments on intermediate commits while you are working on fixes — checking only the review status is NOT sufficient. You must compare timestamps to find comments you haven't addressed yet.
+   - **Address any new comments** from the re-review (repeat steps 4-6 as needed)
+   - This loop continues until: the latest pushed commit has been reviewed by ALL reviewers, all comments are addressed, and CI is green
 
-Once the monitoring loop is complete (all CI checks pass, all reviews complete, all comments addressed):
+**Do not stop monitoring until**: CI is green, all line-level comments have been fetched and addressed, and either (a) all AI reviewers have reviewed the latest commit SHA, or (b) the 10-minute polling timeout has elapsed for reviewers whose previous round had no unaddressed comments.
 
-**Merge automatically**:
-```bash
-gh pr merge --squash --delete-branch
-```
+## Step 8: User Approval and Merge
 
-Then notify the user the PR was merged and ask what to work on next.
+Once CI is green and all comments are addressed:
 
-## Post-Merge
+1. **Notify the user**: Tell them the PR is ready for their review and approval
+2. **Wait for approval**: Do NOT merge until the user explicitly approves
+3. **If feedback given**: Make fixes, commit, push, and repeat from Step 3 (build, tests + browser validation)
+4. **If approved**: Proceed to merge with `gh pr merge --squash --delete-branch`
 
-After merging:
-1. Confirm the PR was merged successfully
-2. Check if there's an associated GitHub issue to close
-3. Ask the user what to work on next (e.g., next issue in the backlog)
+**Exceptions**:
+- For markdown-only PRs (`.md` files only), merge immediately without waiting for user approval.
+- When invoked by the `/execute-issues` skill, Step 8 may be overridden to merge autonomously. See the execute-issues skill for details.
