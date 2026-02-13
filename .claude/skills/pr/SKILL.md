@@ -32,7 +32,7 @@ If updates are needed, make them and commit before proceeding.
 
 ### 3a: Build
 
-Run `dotnet build` to verify the project compiles. If it fails (e.g., missing packages), run `dotnet restore` first, then retry. Fix any compilation errors before proceeding.
+Run `dotnet build src/FlatRate.slnx` to verify the project compiles. If it fails (e.g., missing packages), run `dotnet restore` first, then retry. Fix any compilation errors before proceeding.
 
 ### 3b: Run Tests
 
@@ -41,7 +41,7 @@ Run these checks and **ensure they pass**:
 1. **Unit tests**: Execute `dotnet test src/FlatRate.slnx` — all tests must pass
 2. **E2E tests**:
    - First ensure the E2E Docker profile is running: `docker compose --profile e2e up -d --wait`
-   - Then execute: `cd tests/FlatRate.E2E.Tests && npm test` — all tests must pass
+   - Then execute: `cd src/FlatRate.Web/ClientApp && npm run e2e` — all tests must pass
 
 **STOP if any tests fail.** Fix the failures and re-run until all tests pass. Do not proceed to PR creation with failing tests.
 
@@ -95,8 +95,8 @@ Once tests pass and self-review fixes are committed:
 **For PRs with UI changes**:
 
 1. **Start the dev stack**: Run `docker compose --profile dev-stack up -d`
-2. **Wait for startup**: Wait for the app to be available at http://localhost:4200
-3. **Write a Playwright validation script**: Create a script in `tests/FlatRate.E2E.Tests/` (where Playwright is installed) that uses Playwright to navigate to the app and capture screenshots. For PrimeNG components like dropdowns, interact with them directly (click to open, type to filter, click to select) rather than relying on URL query parameters.
+2. **Wait for startup**: Wait for the app to be available at http://localhost:4201
+3. **Write a Playwright validation script**: Create a script in `src/FlatRate.Web/ClientApp/e2e/` (where Playwright is installed) that uses Playwright to navigate to the app and capture screenshots. For PrimeNG components like dropdowns, interact with them directly (click to open, type to filter, click to select) rather than relying on URL query parameters.
 4. **Capture before/after screenshots** (for refactoring PRs):
    - If this is a refactoring PR with no expected visual changes, take screenshots BEFORE making changes (from main branch) and AFTER
    - Compare to verify no unintended visual differences
@@ -136,8 +136,8 @@ After the PR is created, **actively monitor** and address feedback:
    - **ALL warnings must be addressed** - either fix the issue or update the workflow if it's a false positive
 3. **Monitor for AI reviews**: Actively poll for CodeRabbit and Copilot reviews to complete
    - **CodeRabbit**: Use `gh pr checks` - wait until CodeRabbit shows "Review completed"
-   - **Copilot**: Use `gh api repos/{owner}/{repo}/pulls/{number}/reviews --jq '.[] | select(.user.login | contains("copilot")) | .state'` to check if Copilot has submitted a review (look for "COMMENTED" state)
-   - Alternatively, use `gh pr view <number> --comments` and look for comments from `copilot-pull-request-reviewer[bot]`
+   - **Copilot**: Use `gh api repos/{owner}/{repo}/pulls/{number}/reviews --jq '.[] | select((.user.login | contains("copilot")) and .state != "DISMISSED") | .state'` to check if Copilot has submitted a review. **Any non-`DISMISSED` state means Copilot has reviewed**; treat `CHANGES_REQUESTED` as blocking feedback you must address.
+   - Alternatively, use `gh pr view <number> --comments` and look for comments from `copilot-pull-request-reviewer[bot]` to understand the feedback associated with a `CHANGES_REQUESTED` or `COMMENTED` review
    - Keep checking every 5 minutes until BOTH CodeRabbit AND Copilot reviews are complete
 4. **Address all comments immediately**: When comments appear:
    - Read each comment carefully, including **high-level feedback** in comment bodies (not just line-specific suggestions)
@@ -183,4 +183,6 @@ Once CI is green and all comments are addressed:
 3. **If feedback given**: Make fixes, commit, push, and repeat from Step 3 (build, tests + browser validation)
 4. **If approved**: Proceed to merge with `gh pr merge --squash --delete-branch`
 
-**Exception**: For markdown-only PRs (`.md` files only), merge immediately without waiting for user approval.
+**Exceptions**:
+- For markdown-only PRs (`.md` files only), merge immediately without waiting for user approval.
+- When invoked by the `/execute-issues` skill, Step 8 may be overridden to merge autonomously. See the execute-issues skill for details.

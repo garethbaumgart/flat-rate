@@ -54,7 +54,7 @@ ls mockups/ 2>/dev/null | grep -i <feature-keyword>
 
 ## Step 4: Create UX Mockup (When Needed)
 
-Create a standalone HTML mockup file at `mockups/<feature-name>.html` with **10 distinct design options**.
+Create the `mockups/` directory if it doesn't exist (`mkdir -p mockups`), then create a standalone HTML mockup file at `mockups/<feature-name>.html` with **10 distinct design options**.
 
 ### Mockup Template
 
@@ -85,7 +85,10 @@ Follow the exact pattern used in existing mockups if any exist. Key requirements
 
 After creating the mockup, open it for the user:
 ```bash
+# macOS:
 open mockups/<feature-name>.html
+# Linux:
+xdg-open mockups/<feature-name>.html
 ```
 
 Then tell the user: "I've created a mockup with 10 design options and recommended Option X. Please review and let me know which option you prefer, or I'll proceed with the recommended one."

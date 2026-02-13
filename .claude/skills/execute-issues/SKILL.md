@@ -65,7 +65,7 @@ The prompt to the sub-agent MUST include ALL of the following context so it can 
 >
 > **Instructions:**
 >
-> 1. **Refine If Needed**: EITHER "Run the /refine NUMBER skill first to create an implementation plan. If /refine asks clarifying questions, use context from the issue body and codebase to answer with your best judgment." OR "Skip — this issue already has an implementation plan."
+> 1. **Refine If Needed**: EITHER "Run the /refine NUMBER skill first to create an implementation plan. When /refine asks clarifying questions, answer them autonomously using context from the issue body and codebase — do NOT use AskUserQuestion or wait for user input." OR "Skip — this issue already has an implementation plan."
 >
 > 2. **Create a Feature Branch**: Run `git checkout main && git pull && git checkout -b feat/issue-NUMBER-SHORT_DESCRIPTION`
 >
@@ -74,7 +74,7 @@ The prompt to the sub-agent MUST include ALL of the following context so it can 
 > 4. **Create PR and Merge**: Run the /pr skill to create a PR, run tests, monitor CI, address review comments, and merge. Override these /pr steps:
 >    - /pr Step 8 (Merge Approval): Merge immediately without waiting for user approval. Do NOT ask the user.
 >
-> 5. **Verify and Clean Up**: After merge, confirm the PR state with `gh pr view --json state,number,url`. Then run `git checkout main && git pull`.
+> 5. **Verify and Clean Up**: After merge, using the PR number from the PR you just created, confirm the PR state with `gh pr view <PR-NUMBER> --json state,number,url`. Then run `git checkout main && git pull`.
 >
 > 6. **Report Back**: When done, report a single summary line with: issue number, PR number, PR URL, and status (Merged/Failed).
 >
@@ -112,6 +112,6 @@ Include links to each merged PR.
 - **SEQUENTIAL only** — never start issue N+1 until issue N's sub-agent has completed and returned its result
 - **Fresh branch each time** — every issue branches off the latest `main` after pulling
 - **Self-contained prompts** — the sub-agent prompt must include the full issue body and all instructions. The sub-agent cannot see the main conversation history.
-- **Self-healing** — if tests or CI fail, the sub-agent should fix and retry. It should only report failure if truly stuck after multiple attempts.
+- **Self-healing** — if tests or CI fail, the sub-agent should fix and retry up to 3 attempts. It should report failure if the issue cannot be resolved after 3 fix attempts or if the same test continues failing after fixes.
 - **Refine autonomously** — if `/refine` asks a clarifying question, answer with best judgment from the issue body and codebase. Only escalate to the user if genuinely undecidable.
 - **No blocking prompts** — refine answers and merge approvals should all be made autonomously. Neither the main agent nor sub-agents should ask the user for permission to merge.
