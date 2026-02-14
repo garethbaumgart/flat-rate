@@ -1,11 +1,7 @@
 name: Unit Tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_call: # Allow other workflows to call this one
+  workflow_call: # Called by ci.yml and deploy-cloud-run.yml
 
 jobs:
   unit-tests:
