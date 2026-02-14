@@ -128,7 +128,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                 <td class="hidden lg:table-cell">
                   @if (hasDefaultRates(property)) {
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                      style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                      style="background: var(--color-success-bg); color: var(--color-success);">
                       <i class="pi pi-check-circle"></i>Configured
                     </span>
                   } @else {
@@ -424,7 +424,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                     }
                     @if (collaborator.isPending) {
                       <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium mt-1"
-                        style="background: rgba(251, 191, 36, 0.1); color: #f59e0b;">
+                        style="background: var(--color-warning-bg); color: var(--color-warning);">
                         Pending
                       </span>
                     }
@@ -432,8 +432,8 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
-                    [style.background]="collaborator.role === 'Owner' ? 'rgba(99, 102, 241, 0.1)' : 'var(--color-bg-tertiary)'"
-                    [style.color]="collaborator.role === 'Owner' ? '#6366f1' : 'var(--color-text-muted)'">
+                    [style.background]="collaborator.role === 'Owner' ? 'var(--color-accent-bg)' : 'var(--color-bg-tertiary)'"
+                    [style.color]="collaborator.role === 'Owner' ? 'var(--color-accent)' : 'var(--color-text-muted)'">
                     {{ collaborator.role }}
                   </span>
                   @if (collaborator.role !== 'Owner' && collaborator.userId) {
@@ -454,8 +454,8 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
         }
 
         @if (sharingService.error()) {
-          <div class="mt-4 p-3 rounded-lg" style="background: rgba(239, 68, 68, 0.1);">
-            <p class="text-sm" style="color: #ef4444;">{{ sharingService.error() }}</p>
+          <div class="mt-4 p-3 rounded-lg" style="background: var(--color-error-bg);">
+            <p class="text-sm" style="color: var(--color-error);">{{ sharingService.error() }}</p>
           </div>
         }
       }

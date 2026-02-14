@@ -1,34 +1,37 @@
 @import "tailwindcss" source("./app");
 @import "primeicons/primeicons.css";
 
-/* Professional Dark Theme - CSS Custom Properties */
+/* Arctic Monochrome Theme - CSS Custom Properties */
 :root {
   /* Light mode colors */
-  --color-bg-primary: #f8fafc;
+  --color-bg-primary: #fafafa;
   --color-bg-secondary: #ffffff;
-  --color-bg-tertiary: #f1f5f9;
+  --color-bg-tertiary: #f3f4f6;
   --color-bg-card: #ffffff;
   --color-bg-elevated: #ffffff;
 
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-tertiary: #64748b;
-  --color-text-muted: #94a3b8;
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-tertiary: #6b7280;
+  --color-text-muted: #9ca3af;
 
-  --color-border: #e2e8f0;
-  --color-border-light: #f1f5f9;
+  --color-border: #e5e7eb;
+  --color-border-light: #f3f4f6;
 
-  /* Accent colors - Teal */
-  --color-accent: #14b8a6;
-  --color-accent-hover: #0d9488;
-  --color-accent-light: #5eead4;
-  --color-accent-bg: rgba(20, 184, 166, 0.1);
+  /* Accent colors - Grey */
+  --color-accent: #374151;
+  --color-accent-hover: #1f2937;
+  --color-accent-light: #6b7280;
+  --color-accent-bg: rgba(55, 65, 81, 0.06);
 
   /* Status colors */
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
   --color-info: #3b82f6;
+  --color-success-bg: rgba(5, 150, 105, 0.1);
+  --color-warning-bg: rgba(217, 119, 6, 0.1);
+  --color-error-bg: rgba(220, 38, 38, 0.1);
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -36,31 +39,40 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 
   /* Glass effect */
-  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-bg: rgba(255, 255, 255, 0.95);
   --glass-border: rgba(255, 255, 255, 0.2);
 }
 
 /* Dark mode colors */
 .dark {
-  --color-bg-primary: #0f172a;
-  --color-bg-secondary: #1e293b;
-  --color-bg-tertiary: #334155;
-  --color-bg-card: #1e293b;
-  --color-bg-elevated: #334155;
+  --color-bg-primary: #111111;
+  --color-bg-secondary: #1a1a1a;
+  --color-bg-tertiary: #262626;
+  --color-bg-card: #1a1a1a;
+  --color-bg-elevated: #262626;
 
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #cbd5e1;
-  --color-text-tertiary: #94a3b8;
-  --color-text-muted: #64748b;
+  --color-text-primary: #f5f5f5;
+  --color-text-secondary: #a3a3a3;
+  --color-text-tertiary: #737373;
+  --color-text-muted: #525252;
 
-  --color-border: #334155;
-  --color-border-light: #1e293b;
+  --color-border: #333333;
+  --color-border-light: #1a1a1a;
 
-  /* Accent colors - Teal (brighter for dark mode) */
-  --color-accent: #2dd4bf;
-  --color-accent-hover: #5eead4;
-  --color-accent-light: #99f6e4;
-  --color-accent-bg: rgba(45, 212, 191, 0.15);
+  /* Accent colors - Grey (brighter for dark mode) */
+  --color-accent: #d4d4d4;
+  --color-accent-hover: #e5e5e5;
+  --color-accent-light: #f5f5f5;
+  --color-accent-bg: rgba(212, 212, 212, 0.06);
+
+  /* Status colors for dark mode */
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-info: #60a5fa;
+  --color-success-bg: rgba(52, 211, 153, 0.1);
+  --color-warning-bg: rgba(251, 191, 36, 0.1);
+  --color-error-bg: rgba(248, 113, 113, 0.1);
 
   /* Shadows for dark mode */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
@@ -68,8 +80,8 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
 
   /* Glass effect for dark mode */
-  --glass-bg: rgba(30, 41, 59, 0.8);
-  --glass-border: rgba(51, 65, 85, 0.5);
+  --glass-bg: rgba(26, 26, 26, 0.95);
+  --glass-border: rgba(38, 38, 38, 0.5);
 }
 
 /* Base styles */
@@ -95,17 +107,17 @@ body {
 /* PrimeNG Theme Overrides */
 :root {
   /* Primary color */
-  --p-primary-50: #f0fdfa;
-  --p-primary-100: #ccfbf1;
-  --p-primary-200: #99f6e4;
-  --p-primary-300: #5eead4;
-  --p-primary-400: #2dd4bf;
-  --p-primary-500: #14b8a6;
-  --p-primary-600: #0d9488;
-  --p-primary-700: #0f766e;
-  --p-primary-800: #115e59;
-  --p-primary-900: #134e4a;
-  --p-primary-950: #042f2e;
+  --p-primary-50: #f9fafb;
+  --p-primary-100: #f3f4f6;
+  --p-primary-200: #e5e7eb;
+  --p-primary-300: #d1d5db;
+  --p-primary-400: #9ca3af;
+  --p-primary-500: #6b7280;
+  --p-primary-600: #4b5563;
+  --p-primary-700: #374151;
+  --p-primary-800: #1f2937;
+  --p-primary-900: #111827;
+  --p-primary-950: #030712;
 
   /* Surface colors for PrimeNG */
   --p-surface-0: var(--color-bg-secondary);
@@ -130,9 +142,9 @@ body {
 }
 
 .dark {
-  --p-primary-500: #2dd4bf;
-  --p-primary-600: #14b8a6;
-  --p-primary-400: #5eead4;
+  --p-primary-500: #d4d4d4;
+  --p-primary-600: #a3a3a3;
+  --p-primary-400: #e5e5e5;
 }
 
 /* Card styles */
@@ -163,7 +175,7 @@ body {
 
 .p-button:not(.p-button-text):not(.p-button-outlined):hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(55, 65, 81, 0.3) !important;
 }
 
 /* Table styles */

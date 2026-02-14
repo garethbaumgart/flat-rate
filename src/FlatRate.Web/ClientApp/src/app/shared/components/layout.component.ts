@@ -79,7 +79,7 @@ import { AuthService } from '../../core/services/auth.service';
                   </div>
                   <button
                     (click)="authService.logout()"
-                    class="p-2 rounded-lg transition-colors hover:bg-red-500/10"
+                    class="p-2 rounded-lg transition-colors hover:bg-[var(--color-error-bg)]"
                     style="color: var(--color-text-secondary);"
                     title="Sign out"
                   >
