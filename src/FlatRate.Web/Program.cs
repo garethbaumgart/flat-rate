@@ -11,10 +11,21 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure forwarded headers for Cloud Run (TLS termination at load balancer)
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+        options.ForwardLimit = 1;
+    });
+}
 
 // Add Application services (MediatR handlers)
 builder.Services.AddApplication();
@@ -90,6 +101,11 @@ builder.Services.AddSingleton(new AuthConfiguration { GoogleConfigured = googleC
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseForwardedHeaders();
+}
 
 // Apply database migrations on startup
 const int maxRetries = 5;
