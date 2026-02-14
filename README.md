@@ -62,6 +62,12 @@ tests/
 └── FlatRate.Domain.Tests/  # Domain unit tests
 ```
 
+## Deployment
+
+The app deploys automatically to Google Cloud Run when changes are pushed to `main`. The pipeline runs unit and E2E tests before deploying.
+
+See `.github/workflows/deploy-cloud-run.yml` for the full workflow and `setup-gcp.sh` for GCP project setup.
+
 ## Billing Calculations
 
 ### Electricity
