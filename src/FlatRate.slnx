@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="../tests/FlatRate.Application.Tests/FlatRate.Application.Tests.csproj" />
   <Project Path="../tests/FlatRate.Domain.Tests/FlatRate.Domain.Tests.csproj" />
   <Project Path="FlatRate.Application/FlatRate.Application.csproj" />
   <Project Path="FlatRate.Domain/FlatRate.Domain.csproj" />
