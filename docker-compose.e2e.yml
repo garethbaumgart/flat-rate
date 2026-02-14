@@ -41,6 +41,7 @@ services:
       dockerfile: src/FlatRate.Web/ClientApp/Dockerfile.e2e
     environment:
       BASE_URL: http://api:5000
+      CI: "true"
     depends_on:
       api:
         condition: service_healthy
