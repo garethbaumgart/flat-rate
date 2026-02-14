@@ -11,6 +11,7 @@ test.describe('Property Sharing API', () => {
   const collaboratorAuth = { 'X-Mock-User': 'sharing-collaborator' };
   let propertyId: string;
   let collaboratorUserId: string;
+  let billId: string;
 
   // Helper to ensure user exists before making authenticated API calls
   async function ensureUserExists(request: any, headers: Record<string, string>) {
@@ -72,11 +73,12 @@ test.describe('Property Sharing API', () => {
       const collaborators = await response.json();
       expect(collaborators.length).toBeGreaterThanOrEqual(2); // owner + collaborator
 
-      // Find the collaborator by userId (role may be string "Editor" or numeric 1)
+      // Find the collaborator by userId
       const collab = collaborators.find(
         (c: any) => c.userId === collaboratorUserId
       );
       expect(collab).toBeDefined();
+      // Role serializes as numeric (1 = Editor) with default System.Text.Json
       expect([1, 'Editor']).toContain(collab.role);
     });
 
@@ -91,6 +93,33 @@ test.describe('Property Sharing API', () => {
     });
 
     test('second user can view bills on the shared property', async ({ request }) => {
+      // First, owner creates a bill on the shared property
+      const billResponse = await request.post('/api/bills', {
+        headers: ownerAuth,
+        data: {
+          propertyId,
+          periodStart: '2024-01-01',
+          periodEnd: '2024-01-31',
+          electricityReadingOpening: 1000,
+          electricityReadingClosing: 1150,
+          electricityRate: 2.5,
+          waterReadingOpening: 500,
+          waterReadingClosing: 525,
+          waterRateTier1: 10.0,
+          waterRateTier2: 15.0,
+          waterRateTier3: 20.0,
+          sanitationReadingOpening: 500,
+          sanitationReadingClosing: 525,
+          sanitationRateTier1: 8.0,
+          sanitationRateTier2: 12.0,
+          sanitationRateTier3: 16.0,
+        },
+      });
+      expect(billResponse.status()).toBe(201);
+      const bill = await billResponse.json();
+      billId = bill.id;
+
+      // Now collaborator should be able to see the bill
       const response = await request.get(
         `/api/bills?propertyId=${propertyId}`,
         { headers: collaboratorAuth }
@@ -99,6 +128,7 @@ test.describe('Property Sharing API', () => {
       expect(response.status()).toBe(200);
       const data = await response.json();
       expect(Array.isArray(data)).toBeTruthy();
+      expect(data.some((b: any) => b.id === billId)).toBeTruthy();
     });
 
     test('owner revokes access', async ({ request }) => {

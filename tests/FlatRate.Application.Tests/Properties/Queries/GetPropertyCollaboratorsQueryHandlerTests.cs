@@ -136,6 +136,38 @@ public class GetPropertyCollaboratorsQueryHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WhenUserRecordMissing_ReturnsCollaboratorWithNullDetails()
+    {
+        // Arrange
+        var currentUserId = Guid.NewGuid();
+        var propertyId = Guid.NewGuid();
+        var missingUserId = Guid.NewGuid();
+
+        var access = PropertyAccess.CreateForUser(propertyId, missingUserId, PropertyRole.Editor);
+
+        _currentUserService.UserId.Returns(currentUserId);
+        _propertyRepository.UserHasAccessAsync(propertyId, currentUserId, Arg.Any<CancellationToken>())
+            .Returns(true);
+        _propertyAccessRepository.GetByPropertyIdAsync(propertyId, Arg.Any<CancellationToken>())
+            .Returns(new List<PropertyAccess> { access });
+        _userRepository.GetByIdAsync(missingUserId, Arg.Any<CancellationToken>())
+            .Returns((User?)null);
+
+        var query = new GetPropertyCollaboratorsQuery(propertyId);
+
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert — collaborator is included with null email/name
+        result.Should().HaveCount(1);
+        var dto = result[0];
+        dto.UserId.Should().Be(missingUserId);
+        dto.Email.Should().BeNull();
+        dto.Name.Should().BeNull();
+        dto.IsPending.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task Handle_ReturnsMixOfActiveAndPending()
     {
         // Arrange

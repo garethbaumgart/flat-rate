@@ -127,6 +127,16 @@ public class PropertyAccessTests
         access.InvitedEmail.Should().Be("user@example.com");
     }
 
+    [Fact]
+    public void CreatePendingInvite_SetsCreatedAtToUtcNow()
+    {
+        // Arrange & Act
+        var access = PropertyAccess.CreatePendingInvite(Guid.NewGuid(), "user@example.com", PropertyRole.Editor);
+
+        // Assert
+        access.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
     #endregion
 
     #region CreatePendingInvite - Invalid Scenarios
@@ -224,6 +234,22 @@ public class PropertyAccessTests
         // Assert
         act.Should().Throw<ArgumentException>()
             .WithMessage("*User ID cannot be empty*");
+    }
+
+    [Fact]
+    public void AcceptInvite_DoesNotChangeCreatedAt()
+    {
+        // Arrange
+        var access = PropertyAccess.CreatePendingInvite(Guid.NewGuid(), "user@example.com", PropertyRole.Editor);
+        var originalCreatedAt = access.CreatedAt;
+
+        // Act
+        access.AcceptInvite(Guid.NewGuid());
+
+        // Assert
+        access.CreatedAt.Should().Be(originalCreatedAt);
+        access.AcceptedAt.Should().NotBeNull();
+        access.AcceptedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     #endregion

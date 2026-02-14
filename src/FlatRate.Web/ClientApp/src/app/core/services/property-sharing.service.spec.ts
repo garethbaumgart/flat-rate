@@ -12,7 +12,7 @@ import { Collaborator } from '../models/collaborator.model';
  * called inside inviteCollaborator) have a chance to issue their HTTP requests.
  */
 function flushMicrotasks(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 0));
+  return Promise.resolve();
 }
 
 describe('PropertySharingService', () => {
@@ -92,12 +92,13 @@ describe('PropertySharingService', () => {
   });
 
   describe('loadCollaborators', () => {
-    it('should set loading to true during request', () => {
-      service.loadCollaborators('prop-1');
+    it('should set loading to true during request', async () => {
+      const promise = service.loadCollaborators('prop-1');
       expect(service.loading()).toBe(true);
 
       const req = httpTesting.expectOne('/api/properties/prop-1/collaborators');
       req.flush([]);
+      await promise;
     });
 
     it('should set collaborators and loading to false on success', async () => {
@@ -250,7 +251,7 @@ describe('PropertySharingService', () => {
       expect(service.error()).toBe('Property not found.');
     });
 
-    it('should return HTTP message for server error without error body', async () => {
+    it('should fall back to HttpErrorResponse message for server error without error body', async () => {
       const loadPromise = service.loadCollaborators('prop-1');
       const req = httpTesting.expectOne('/api/properties/prop-1/collaborators');
       req.flush(null, { status: 500, statusText: 'Internal Server Error' });
