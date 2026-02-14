@@ -11,27 +11,50 @@ You are executing a list of GitHub issues sequentially. The argument is a space-
 
 Before implementing anything, scan ALL listed issues upfront to assess readiness.
 
-1. For each issue number provided, run `gh issue view <number>` and check:
-   - Does the issue body contain an `## Implementation Plan` section?
-   - Is the scope clear enough to implement without clarification?
-   - Are there acceptance criteria?
-   - Is this a minor change (bug fix, dependency update, config, docs, test-only)?
+### Step 1: Assess Each Issue
 
-2. Present a summary table to the user:
+For each issue number provided, run `gh issue view <number>` and check:
+- Does the issue body contain an `## Implementation Plan` section?
+- Is the scope clear enough to implement without clarification?
+- Are there acceptance criteria?
+- Is this a **trivial** change? (label changes, dependency bumps, one-line config fixes, docs-only)
+
+### Step 2: Hard-Gate on Implementation Plans
+
+**Issues without an `## Implementation Plan` section must NOT be autonomously refined.** This is a hard gate.
+
+Classification rules:
+- **Trivial issues** (label changes, dependency bumps, one-line fixes, docs-only): May proceed without a plan. These do not need `/refine`.
+- **Non-trivial issues without a plan**: Must be surfaced to the user. Do NOT autonomously run `/refine` — the plan quality depends on human judgment for non-trivial work.
+
+### Step 3: Check Plan Staleness
+
+For issues that **have** an implementation plan, check if the plan is stale:
+
+1. Extract all file paths mentioned in the plan's `## Implementation Plan` section.
+2. Run `git log --oneline --since="$(gh issue view <number> --json updatedAt -q .updatedAt)" -- <file1> <file2> ...` to check if any referenced files were modified after the plan was written.
+3. If files were modified, the plan is **stale** and must be flagged.
+
+### Step 4: Present Summary
+
+Present a summary table to the user:
 
 ```
-| Issue | Title | Has Plan? | Needs Refinement? | Minor? | Reason |
-|-------|-------|-----------|-------------------|--------|--------|
-| #340  | ...   | Yes       | No                | No     |        |
-| #341  | ...   | No        | Yes               | No     | No implementation plan |
-| #342  | ...   | Yes       | Yes               | Yes    | Ambiguous acceptance criteria |
+| Issue | Title | Has Plan? | Trivial? | Stale? | Action |
+|-------|-------|-----------|----------|--------|--------|
+| #340  | ...   | Yes       | No       | No     | Ready to execute |
+| #341  | ...   | No        | No       | N/A    | BLOCKED — needs /refine first |
+| #342  | ...   | Yes       | No       | Yes    | STALE — files changed since plan was written |
+| #343  | ...   | No        | Yes      | N/A    | Ready (trivial, no plan needed) |
 ```
 
-3. Ask the user: **"These issues need refinement before implementation. Should I proceed with refining them as part of the execution, or do you want to refine them separately first?"**
+### Step 5: User Decision
 
-4. **Wait for the user's response before continuing to Phase 2.**
+- **If any issues are BLOCKED** (non-trivial, no plan): Ask the user: "These issues need refinement before implementation. Please run `/refine` on them first, or confirm you'd like to skip them."
+- **If any issues are STALE**: Ask the user: "These plans reference files that changed since the plan was written. Should I re-refine them, or proceed with the existing plan?"
+- **If all issues are ready**: Tell the user all issues are ready and ask for confirmation to begin execution.
 
-If no issues need refinement, tell the user all issues are ready and ask for confirmation to begin execution.
+**Wait for the user's response before continuing to Phase 2.**
 
 ## Phase 2: Sequential Execution via Sub-Agents
 
@@ -65,18 +88,20 @@ The prompt to the sub-agent MUST include ALL of the following context so it can 
 >
 > **Instructions:**
 >
-> 1. **Refine If Needed**: EITHER "Run the /refine NUMBER skill first to create an implementation plan. When /refine asks clarifying questions, answer them autonomously using context from the issue body and codebase — do NOT use AskUserQuestion or wait for user input." OR "Skip — this issue already has an implementation plan."
+> 1. **Refine If Needed**: EITHER "Run the /refine NUMBER skill first to create an implementation plan. If /refine asks clarifying questions, use context from the issue body and codebase to answer with your best judgment." OR "Skip — this issue already has an implementation plan."
 >
 > 2. **Create a Feature Branch**: Run `git checkout main && git pull && git checkout -b feat/issue-NUMBER-SHORT_DESCRIPTION`
 >
 > 3. **Implement**: Follow the implementation plan step by step. Write the code, create tests as specified, and ensure everything compiles.
 >
-> 4. **Create PR and Merge**: Run the /pr skill to create a PR, run tests, monitor CI, address review comments, and merge. Override these /pr steps:
->    - /pr Step 8 (Merge Approval): Merge immediately without waiting for user approval. Do NOT ask the user.
+> 4. **Functional Verification**: Before creating the PR, manually verify the feature works by running the dev stack and using browser automation to exercise the primary user flow. For UI features, this means: navigate to the feature, interact with it (click, type, toggle), and verify the expected result appears in the DOM. If the feature does not work as expected, fix it before proceeding.
 >
-> 5. **Verify and Clean Up**: After merge, using the PR number from the PR you just created, confirm the PR state with `gh pr view <PR-NUMBER> --json state,number,url`. Then run `git checkout main && git pull`.
+> 5. **Create PR and Merge**: Run the /pr skill to create a PR, run tests, monitor CI, address review comments, and merge. Override these /pr steps:
+>    - /pr Step 9 (Merge Approval): Merge immediately without waiting for user approval. Do NOT ask the user.
 >
-> 6. **Report Back**: When done, report a single summary line with: issue number, PR number, PR URL, and status (Merged/Failed).
+> 6. **Verify and Clean Up**: After merge, confirm the PR state with `gh pr view --json state,number,url`. Then run `git checkout main && git pull`.
+>
+> 7. **Report Back**: When done, report a single summary line with: issue number, PR number, PR URL, and status (Merged/Failed).
 >
 > **Critical Rules:**
 > - Do NOT ask the user any questions. Work fully autonomously.
@@ -112,6 +137,6 @@ Include links to each merged PR.
 - **SEQUENTIAL only** — never start issue N+1 until issue N's sub-agent has completed and returned its result
 - **Fresh branch each time** — every issue branches off the latest `main` after pulling
 - **Self-contained prompts** — the sub-agent prompt must include the full issue body and all instructions. The sub-agent cannot see the main conversation history.
-- **Self-healing** — if tests or CI fail, the sub-agent should fix and retry up to 3 attempts. It should report failure if the issue cannot be resolved after 3 fix attempts or if the same test continues failing after fixes.
+- **Self-healing** — if tests or CI fail, the sub-agent should fix and retry. It should only report failure if truly stuck after multiple attempts.
 - **Refine autonomously** — if `/refine` asks a clarifying question, answer with best judgment from the issue body and codebase. Only escalate to the user if genuinely undecidable.
 - **No blocking prompts** — refine answers and merge approvals should all be made autonomously. Neither the main agent nor sub-agents should ask the user for permission to merge.
