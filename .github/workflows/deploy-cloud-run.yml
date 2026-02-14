@@ -91,6 +91,6 @@ jobs:
 
       - name: Show deployment URL
         run: |
-          URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --region=${{ env.REGION }} --format='value(status.url)')
-          echo "## Deployment successful! :rocket:" >> $GITHUB_STEP_SUMMARY
-          echo "Service URL: $URL" >> $GITHUB_STEP_SUMMARY
+          URL=$(gcloud run services describe "${{ env.SERVICE_NAME }}" --region="${{ env.REGION }}" --format='value(status.url)')
+          echo "## Deployment successful! :rocket:" >> "$GITHUB_STEP_SUMMARY"
+          echo "Service URL: ${URL}" >> "$GITHUB_STEP_SUMMARY"
