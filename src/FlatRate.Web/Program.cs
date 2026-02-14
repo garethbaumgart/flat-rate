@@ -92,22 +92,20 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // Apply database migrations on startup
-using (var scope = app.Services.CreateScope())
+const int maxRetries = 5;
+for (var i = 0; i < maxRetries; i++)
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<FlatRateDbContext>();
-    const int maxRetries = 5;
-    for (var i = 0; i < maxRetries; i++)
+    try
     {
-        try
-        {
-            dbContext.Database.Migrate();
-            break;
-        }
-        catch (Exception ex) when (i < maxRetries - 1)
-        {
-            app.Logger.LogWarning(ex, "Database migration attempt {Attempt}/{Max} failed, retrying...", i + 1, maxRetries);
-            Thread.Sleep(3000);
-        }
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<FlatRateDbContext>();
+        dbContext.Database.Migrate();
+        break;
+    }
+    catch (Exception ex) when (i < maxRetries - 1)
+    {
+        app.Logger.LogWarning(ex, "Database migration attempt {Attempt}/{Max} failed, retrying...", i + 1, maxRetries);
+        Thread.Sleep(3000);
     }
 }
 
