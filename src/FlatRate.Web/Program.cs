@@ -11,22 +11,11 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure forwarded headers for Cloud Run (TLS termination at load balancer)
-if (!builder.Environment.IsDevelopment())
-{
-    builder.Services.Configure<ForwardedHeadersOptions>(options =>
-    {
-        options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
-        options.ForwardLimit = 1;
-        options.KnownProxies.Clear();
-    });
-}
 
 // Add Application services (MediatR handlers)
 builder.Services.AddApplication();
@@ -103,9 +92,15 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// Cloud Run terminates TLS at the load balancer and forwards as HTTP.
+// Force HTTPS scheme in production so OAuth generates correct redirect URIs.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseForwardedHeaders();
+    app.Use((context, next) =>
+    {
+        context.Request.Scheme = "https";
+        return next();
+    });
 }
 
 // Apply database migrations on startup
