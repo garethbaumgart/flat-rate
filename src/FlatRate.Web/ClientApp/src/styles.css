@@ -37,6 +37,7 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-accent: 0 4px 12px rgba(55, 65, 81, 0.3);
 
   /* Glass effect */
   --glass-bg: rgba(255, 255, 255, 0.95);
@@ -78,6 +79,7 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-accent: 0 4px 12px rgba(0, 0, 0, 0.7);
 
   /* Glass effect for dark mode */
   --glass-bg: rgba(26, 26, 26, 0.95);
@@ -175,7 +177,7 @@ body {
 
 .p-button:not(.p-button-text):not(.p-button-outlined):hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(55, 65, 81, 0.3) !important;
+  box-shadow: var(--shadow-accent) !important;
 }
 
 /* Table styles */
