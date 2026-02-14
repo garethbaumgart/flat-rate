@@ -83,6 +83,10 @@ Follow the exact pattern used in existing mockups if any exist. Key requirements
 
 6. **Include a "Recommendation" section** explaining the recommended choice.
 
+### Third-Party UI Extensions
+
+When the plan involves integrating a UI library or extension, identify the actual DOM output by reading the library's source code or documentation. Do NOT assume standard HTML elements — many libraries (TipTap, ProseMirror, Slate, etc.) use custom NodeViews that render non-standard DOM structures. Include the actual DOM structure in the plan so CSS selectors, query selectors, and interaction logic are correct from the start.
+
 After creating the mockup, open it for the user:
 ```bash
 # macOS:
@@ -164,6 +168,109 @@ Each step must include:
 - **Include optimistic update changes** — if the change affects data that's optimistically updated on the frontend, include steps to update all callers
 - **Include test expectations** — note what tests should be added or updated (but don't write the test code in the plan)
 
+### Plan Quality Requirements (ENFORCED)
+
+These requirements ensure sub-agents can implement the plan without ambiguity or missed updates.
+
+#### 1. Exact Method Signatures
+
+For any method being **created or modified**, the plan must include the full method signature — not just the file path. This prevents sub-agents from guessing parameter types, return types, or method names.
+
+```markdown
+**Method signature:**
+\`\`\`csharp
+// New method in IBillRepository
+Task<IReadOnlyList<Bill>> GetByPropertyIdAsync(Guid propertyId, CancellationToken ct = default);
+\`\`\`
+
+\`\`\`typescript
+// New method in bill.service.ts
+loadByPropertyId(propertyId: string): void
+\`\`\`
+```
+
+Do NOT write vague instructions like "add a method to get bills by property" — show the exact signature.
+
+#### 2. List All Callers
+
+For any method being **changed** (signature, behavior, or return type), the plan must identify **all call sites** by running grep and listing the results. Sub-agents must not discover missing callers mid-implementation.
+
+```markdown
+**Callers of `BillRepository.GetByPropertyIdAsync` (must be updated):**
+- `src/FlatRate.Application/Features/Bills/GetBillsByProperty.cs:34`
+- `src/FlatRate.Web/ClientApp/src/app/bills/bill.service.ts:42`
+```
+
+If a method has zero callers (new method), state that explicitly: "No existing callers — this is a new method."
+
+#### 3. Template HTML Before/After
+
+For UI changes, show the **exact HTML being modified** with before and after snippets. Do not write "update the template to show the new field" — show the actual markup.
+
+```markdown
+**Before** (from `bills.page.ts` template, lines 45-52):
+\`\`\`html
+<div class="flex items-center gap-2">
+  <span class="text-sm text-foreground">{{ bill.amount }}</span>
+</div>
+\`\`\`
+
+**After:**
+\`\`\`html
+<div class="flex items-center gap-2">
+  <span class="text-sm text-foreground">{{ bill.amount }}</span>
+  @if (bill.isPaid) {
+    <span class="text-xs text-success">Paid</span>
+  }
+</div>
+\`\`\`
+```
+
+#### 4. List Shared Components to Reuse
+
+Explicitly name shared components (with file paths) that the implementation should use, and **warn against creating duplicates**. Check `src/app/shared/components/` and `src/app/shared/services/` before planning any new shared utility.
+
+```markdown
+**Shared components to reuse:**
+- `src/app/shared/components/error-state.component.ts` — use for API error display
+- `src/app/shared/components/delete-confirm-button.component.ts` — use for inline delete
+- `src/app/shared/services/toast.service.ts` — use for mutation success/error feedback
+
+**Do NOT create:** A new error display component, toast wrapper, or confirmation dialog — these already exist.
+```
+
+#### 5. Pre-Flight Completeness Checklist
+
+Append this machine-readable checklist to the end of every refined issue body. Every box must be checked before the issue is considered fully refined.
+
+```markdown
+## Pre-Flight Checklist
+
+- [ ] All callers of modified methods identified
+- [ ] Shared components listed (or confirmed none apply)
+- [ ] Template HTML before/after included (for UI changes)
+- [ ] Method signatures specified for new/modified methods
+- [ ] Verification steps defined for each acceptance criterion
+- [ ] Optimistic update impact assessed
+- [ ] E2E test decision documented (add/skip with reason)
+```
+
+If a checklist item does not apply (e.g., "Template HTML" for a backend-only change), check it and add "N/A — backend only".
+
+#### 6. Verification Contracts
+
+Each acceptance criterion must have a concrete **verification contract** describing exactly what to navigate to, interact with, and assert during browser validation. This replaces vague criteria like "the feature works" with testable steps.
+
+```markdown
+## Acceptance Criteria
+
+- [ ] Bills can be filtered by property
+  - **Verify:** Navigate to `/bills`. Click the property filter. Select "123 Main St". Assert that only bills for that property are visible. Clear the filter. Assert all bills reappear.
+
+- [ ] Paid badge shows correct color
+  - **Verify:** Create a bill and mark it as paid. Navigate to `/bills`. Assert the paid badge has class `text-success`.
+```
+
 ### Plan Template
 
 ```markdown
@@ -177,9 +284,30 @@ Each step must include:
 |------|--------|
 | `path/to/file.cs` | Description of change |
 
+**Method signatures** (new/modified):
+\`\`\`csharp
+Task<Result> NewMethodAsync(Guid userId, string title, CancellationToken ct = default);
+\`\`\`
+
+**Callers** (for modified methods):
+- `path/to/caller1.cs:34` — update to pass new parameter
+- `path/to/caller2.ts:58` — update return type handling
+
+**Shared components to reuse:**
+- `src/app/shared/components/error-state.component.ts` — for error display
+
 **Pattern to follow** (from `path/to/existing.cs:28-42`):
 \`\`\`csharp
 // Existing code that shows the pattern
+\`\`\`
+
+**Template before/after** (for UI steps):
+\`\`\`html
+<!-- Before (line 45-52) -->
+<div>...</div>
+
+<!-- After -->
+<div>...updated...</div>
 \`\`\`
 
 **New code:**
@@ -190,7 +318,54 @@ Each step must include:
 ### Step 2 — ...
 ```
 
-## Step 7: Update Labels
+## Step 7: Propose E2E Tests
+
+After completing the implementation plan, assess whether the feature warrants E2E test coverage.
+
+### Evaluation Criteria
+
+**Propose a test if the feature involves:**
+- Third-party library integration (custom DOM, NodeViews, plugins)
+- New DOM structures not covered by existing tests
+- Multi-step interaction flows (insert → interact → verify)
+- Data persistence through complex UI paths
+
+**Do NOT propose tests for:**
+- Simple styling changes
+- Individual formatting buttons (bold, italic) — tested upstream by the library
+- Tooltip additions, icon changes
+- Features fully covered by existing unit tests
+
+If no tests meet the evaluation criteria, skip this step entirely — don't ask about tests that aren't worth writing.
+
+### Presentation Flow — One Test at a Time
+
+For each candidate E2E test, use `AskUserQuestion` to present it individually:
+
+```
+Question: "Should we add this E2E test?"
+Header: "E2E Test"
+Options:
+  - "Yes" — Include this test in the implementation plan
+  - "No" — Skip this test
+  - (User can also select "Other" to describe modifications)
+
+Description for the question should include:
+  - Test name (e.g., "can filter bills by property")
+  - Test file (e.g., tests/FlatRate.E2E.Tests/tests/bills.spec.ts)
+  - What it exercises (e.g., "Filter bills by property → verify filtered results → clear filter → verify all bills return")
+  - Why it's valuable (e.g., "Core billing workflow — would catch filter logic bugs")
+```
+
+Present tests **one at a time**, waiting for the user's response before presenting the next. This ensures each test gets individual consideration rather than being rubber-stamped as a batch.
+
+### After All Tests Are Reviewed
+
+- Add approved tests as implementation steps in the plan
+- Note which tests were declined (for traceability)
+- If the user modified a test, incorporate their feedback into the plan
+
+## Step 8: Update Labels
 
 After writing the plan, update the issue labels:
 - **Remove** the `to-refine` label
@@ -201,7 +376,7 @@ After writing the plan, update the issue labels:
 gh issue edit <number> --remove-label "to-refine" --add-label "refined"
 ```
 
-## Step 8: Update the GitHub Issue Body
+## Step 9: Update the GitHub Issue Body
 
 Replace the issue body with the refined version. **Preserve** the original sections (Overview, Dependencies, Chosen Design) and **add/overwrite** the Implementation Plan section.
 
@@ -228,7 +403,19 @@ gh issue edit <number> --body "$(cat <<'ISSUE_BODY'
 ---
 
 ## Acceptance Criteria
-[preserved or refined from original]
+[preserved or refined from original — each criterion includes a verification contract]
+
+---
+
+## Pre-Flight Checklist
+
+- [ ] All callers of modified methods identified
+- [ ] Shared components listed (or confirmed none apply)
+- [ ] Template HTML before/after included (for UI changes)
+- [ ] Method signatures specified for new/modified methods
+- [ ] Verification steps defined for each acceptance criterion
+- [ ] Optimistic update impact assessed
+- [ ] E2E test decision documented (add/skip with reason)
 ISSUE_BODY
 )"
 ```
@@ -239,7 +426,8 @@ ISSUE_BODY
 - **Dependencies** — preserve as-is
 - **Chosen Design** — update if a mockup was created/selected in this session
 - **Implementation Plan** — the full step-by-step plan from Step 6
-- **Acceptance Criteria** — preserve original, add any new criteria discovered during planning
+- **Acceptance Criteria** — preserve original, add any new criteria discovered during planning. Each criterion must have a **verification contract** (see Plan Quality Requirements, item 6)
+- **Pre-Flight Checklist** — the completeness checklist from Plan Quality Requirements, item 5
 
 ### What NOT to Include
 
@@ -247,7 +435,7 @@ ISSUE_BODY
 - Alternative approaches that were rejected
 - Code that was read but not relevant to the plan
 
-## Step 9: Summary
+## Step 10: Summary
 
 Tell the user:
 1. What you found during exploration

@@ -41,7 +41,7 @@ Run these checks and **ensure they pass**:
 1. **Unit tests**: Execute `dotnet test src/FlatRate.slnx` — all tests must pass
 2. **E2E tests**:
    - First ensure the E2E Docker profile is running: `docker compose --profile e2e up -d --wait`
-   - Then execute: `cd src/FlatRate.Web/ClientApp && npm run e2e` — all tests must pass
+   - Then execute: `cd tests/FlatRate.E2E.Tests && npm test` — all tests must pass
 
 **STOP if any tests fail.** Fix the failures and re-run until all tests pass. Do not proceed to PR creation with failing tests.
 
@@ -54,6 +54,7 @@ Review the full diff against the base branch using `git diff main...HEAD` and lo
 - Performance improvements without added complexity
 - Patterns that don't match existing codebase conventions
 - Missing null guards or error handling
+- **Boy Scout Rule**: Any banned or discouraged patterns (`*ngIf`, `[ngClass]`, hardcoded colors, `dark:` prefix, constructor injection → `inject()`) in lines touched by this PR should be migrated to their modern equivalents
 
 ### Security
 - Missing `rel="noreferrer"` on external links (`target="_blank"`)
@@ -96,24 +97,71 @@ Once tests pass and self-review fixes are committed:
 
 1. **Start the dev stack**: Run `docker compose --profile dev-stack up -d`
 2. **Wait for startup**: Wait for the app to be available at http://localhost:4201
-3. **Write a Playwright validation script**: Create a script in `src/FlatRate.Web/ClientApp/e2e/` (where Playwright is installed) that uses Playwright to navigate to the app and capture screenshots. For PrimeNG components like dropdowns, interact with them directly (click to open, type to filter, click to select) rather than relying on URL query parameters.
+3. **Write a Playwright validation script**: Create a script in `tests/FlatRate.E2E.Tests/` (where Playwright is installed) that uses Playwright to navigate to the app and capture screenshots. For PrimeNG components like dropdowns, interact with them directly (click to open, type to filter, click to select) rather than relying on URL query parameters.
 4. **Capture before/after screenshots** (for refactoring PRs):
    - If this is a refactoring PR with no expected visual changes, take screenshots BEFORE making changes (from main branch) and AFTER
    - Compare to verify no unintended visual differences
    - Include screenshots in the PR description or comments
-5. **Test each UI change**: For every UI-visible change in this PR:
+5. **Test each UI change**: For **all UI changes** (new features, modifications, refactors, styling changes, library upgrades), the validation script MUST interact with the affected functionality — not just screenshot the page. The script should: (1) trigger or navigate to the affected feature, (2) interact with it (click, type, toggle, hover — whatever the feature does), (3) assert the expected DOM changes occurred, (4) screenshot the result. A screenshot of a page where you haven't exercised the changed functionality is NOT valid validation.
+
+   This applies to:
+   - **New UI features**: Exercise the new functionality end-to-end
+   - **UI modifications/refactors**: Exercise the existing functionality to verify it still works after the change
+   - **CSS/styling changes**: Verify the affected elements render correctly and interactive states (hover, focus, active) still work
+   - **Library upgrades**: Exercise all features that depend on the upgraded library to catch DOM structure or API changes
+
+   For every UI-visible change in this PR:
    - Navigate to the affected area
-   - Verify the change works as expected
+   - Interact with the feature (click, type, toggle) and verify the expected result
    - **Take a screenshot** of the working feature
    - Test both light and dark mode if styling is involved (screenshot both)
    - Check responsive behavior if layout changes are involved
    - Test keyboard navigation if interactive elements are added
-6. **Add screenshots to PR**:
-   - Use `gh pr comment` to add screenshots showing the UI works
+6. **Upload screenshots to GitHub Releases**:
+   - Get the PR number and repo path programmatically:
+     ```bash
+     PR_NUM=$(gh pr view --json number -q '.number')
+     REPO_PATH=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
+     ```
+   - Ensure the `pr-screenshots` draft release exists:
+     ```bash
+     gh release view pr-screenshots 2>/dev/null || gh release create pr-screenshots --draft --title "PR Screenshots" --notes "Asset hosting for PR validation screenshots. Do not delete."
+     ```
+   - Copy screenshots to a temp directory with PR number prefix (avoids filename collisions across PRs):
+     ```bash
+     UPLOAD_DIR=$(mktemp -d)
+     for f in tests/FlatRate.E2E.Tests/screenshots/<feature>/*.png; do
+       cp "$f" "$UPLOAD_DIR/pr${PR_NUM}-$(basename "$f")"
+     done
+     ```
+   - Upload all prefixed screenshots to the release:
+     ```bash
+     gh release upload pr-screenshots "$UPLOAD_DIR"/pr${PR_NUM}-*.png --clobber
+     ```
+   - The `--clobber` flag overwrites if re-uploading after fixes.
+
+7. **Add screenshots to PR comment using release download URLs**:
+   - Construct URLs using the repo path: `https://github.com/${REPO_PATH}/releases/download/pr-screenshots/<filename>.png`
+   - Use `gh pr comment` with these URLs in markdown `![Alt text](url)`
    - For refactoring: "No visual changes - before/after comparison attached"
    - For new features: "Feature working as expected - screenshots attached"
-7. **Clean up**: Delete any temporary validation scripts after screenshots are captured
-8. **Fix any issues**: If something doesn't work or looks wrong, fix it, commit, push, and re-run tests
+
+   **Example comment:**
+   ```markdown
+   ## Browser Validation Screenshots
+
+   ### Light Mode
+   ![Settings Light](https://github.com/garethbaumgart/flat-rate/releases/download/pr-screenshots/pr22-01-settings-light.png)
+
+   ### Dark Mode
+   ![Settings Dark](https://github.com/garethbaumgart/flat-rate/releases/download/pr-screenshots/pr22-04-settings-dark.png)
+   ```
+
+8. **Clean up**: Delete the temp upload directory, any temporary validation scripts, and local screenshot copies. The screenshots persist permanently on the GitHub Release.
+   ```bash
+   rm -rf "$UPLOAD_DIR"
+   ```
+9. **Fix any issues**: If something doesn't work or looks wrong, fix it, commit, push, and re-run tests
 
 **Screenshot requirements by PR type**:
 | PR Type | Required Screenshots |
@@ -125,7 +173,21 @@ Once tests pass and self-review fixes are committed:
 
 **If UI validation fails**: Fix the issue, commit, push, and restart from Step 3.
 
-## Step 7: Post-PR Monitoring and Review Comments
+## Step 7: Acceptance Criteria Verification
+
+If this PR references a GitHub issue, verify that the implementation satisfies all acceptance criteria.
+
+1. **Read the linked issue's acceptance criteria** using `gh issue view <number>`
+2. For each criterion:
+   - Verify the implementation satisfies it (check the code, test results, or browser validation output)
+   - Check off the criterion on the issue using `gh issue edit` to update the body with `[x]` replacing `[ ]`
+   - If a criterion is NOT met, fix the implementation before proceeding
+3. **Do NOT proceed to Step 8** until every acceptance criterion is checked off
+4. If the issue has no acceptance criteria section, skip this step
+
+This step applies to all PRs that reference a GitHub issue. The agent must go back to the issue and verify each criterion — not just assume the implementation is correct because tests pass.
+
+## Step 8: Post-PR Monitoring and Review Comments
 
 After the PR is created, **actively monitor** and address feedback:
 
@@ -136,8 +198,8 @@ After the PR is created, **actively monitor** and address feedback:
    - **ALL warnings must be addressed** - either fix the issue or update the workflow if it's a false positive
 3. **Monitor for AI reviews**: Actively poll for CodeRabbit and Copilot reviews to complete
    - **CodeRabbit**: Use `gh pr checks` - wait until CodeRabbit shows "Review completed"
-   - **Copilot**: Use `gh api repos/{owner}/{repo}/pulls/{number}/reviews --jq '.[] | select((.user.login | contains("copilot")) and .state != "DISMISSED") | .state'` to check if Copilot has submitted a review. **Any non-`DISMISSED` state means Copilot has reviewed**; treat `CHANGES_REQUESTED` as blocking feedback you must address.
-   - Alternatively, use `gh pr view <number> --comments` and look for comments from `copilot-pull-request-reviewer[bot]` to understand the feedback associated with a `CHANGES_REQUESTED` or `COMMENTED` review
+   - **Copilot**: Use `gh api repos/{owner}/{repo}/pulls/{number}/reviews --jq '.[] | select(.user.login | contains("copilot")) | .state'` to check if Copilot has submitted a review (look for "COMMENTED" state)
+   - Alternatively, use `gh pr view <number> --comments` and look for comments from `copilot-pull-request-reviewer[bot]`
    - Keep checking every 5 minutes until BOTH CodeRabbit AND Copilot reviews are complete
 4. **Address all comments immediately**: When comments appear:
    - Read each comment carefully, including **high-level feedback** in comment bodies (not just line-specific suggestions)
@@ -174,15 +236,16 @@ After the PR is created, **actively monitor** and address feedback:
 
 **Do not stop monitoring until**: CI is green, all line-level comments have been fetched and addressed, and either (a) all AI reviewers have reviewed the latest commit SHA, or (b) the 10-minute polling timeout has elapsed for reviewers whose previous round had no unaddressed comments.
 
-## Step 8: User Approval and Merge
+## Step 9: User Approval and Merge
 
 Once CI is green and all comments are addressed:
 
-1. **Notify the user**: Tell them the PR is ready for their review and approval
-2. **Wait for approval**: Do NOT merge until the user explicitly approves
-3. **If feedback given**: Make fixes, commit, push, and repeat from Step 3 (build, tests + browser validation)
-4. **If approved**: Proceed to merge with `gh pr merge --squash --delete-branch`
+1. **Verify test plan completion**: Before requesting merge approval, verify that ALL test plan checkboxes in the PR description are checked. If any manual verification items remain unchecked, complete them first or convert them to automated checks. Do not proceed until every checkbox is marked done.
+2. **Notify the user**: Tell them the PR is ready for their review and approval
+3. **Wait for approval**: Do NOT merge until the user explicitly approves
+4. **If feedback given**: Make fixes, commit, push, and repeat from Step 3 (build, tests + browser validation)
+5. **If approved**: Proceed to merge with `gh pr merge --squash --delete-branch`
 
 **Exceptions**:
 - For markdown-only PRs (`.md` files only), merge immediately without waiting for user approval.
-- When invoked by the `/execute-issues` skill, Step 8 may be overridden to merge autonomously. See the execute-issues skill for details.
+- When invoked by the `/execute-issues` skill, Step 9 may be overridden to merge autonomously. See the execute-issues skill for details.
