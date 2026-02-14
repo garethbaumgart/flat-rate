@@ -71,11 +71,13 @@ test.describe('Property Sharing API', () => {
       expect(response.status()).toBe(200);
       const collaborators = await response.json();
       expect(collaborators.length).toBeGreaterThanOrEqual(2); // owner + collaborator
-      expect(
-        collaborators.some(
-          (c: any) => c.userId === collaboratorUserId && c.role === 'Editor'
-        )
-      ).toBeTruthy();
+
+      // Find the collaborator by userId (role may be string "Editor" or numeric 1)
+      const collab = collaborators.find(
+        (c: any) => c.userId === collaboratorUserId
+      );
+      expect(collab).toBeDefined();
+      expect([1, 'Editor']).toContain(collab.role);
     });
 
     test('second user can access the shared property', async ({ request }) => {
