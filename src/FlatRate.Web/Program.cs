@@ -18,11 +18,14 @@ using Microsoft.Extensions.FileProviders;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure forwarded headers for Cloud Run (TLS termination at load balancer)
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
+if (!builder.Environment.IsDevelopment())
 {
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.ForwardLimit = null; // Allow any number of proxies
-});
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+        options.ForwardLimit = 1;
+    });
+}
 
 // Add Application services (MediatR handlers)
 builder.Services.AddApplication();
@@ -99,7 +102,10 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-app.UseForwardedHeaders();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseForwardedHeaders();
+}
 
 // Apply database migrations on startup
 const int maxRetries = 5;
