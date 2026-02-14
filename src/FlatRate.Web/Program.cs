@@ -24,6 +24,7 @@ if (!builder.Environment.IsDevelopment())
     {
         options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
         options.ForwardLimit = 1;
+        options.KnownProxies.Clear();
     });
 }
 
