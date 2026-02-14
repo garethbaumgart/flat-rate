@@ -1,0 +1,61 @@
+name: Unit Tests
+
+on:
+  workflow_call: # Called by ci.yml and deploy-cloud-run.yml
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: flatrate
+          POSTGRES_PASSWORD: flatrate
+          POSTGRES_DB: flatrate
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: src/FlatRate.Web/ClientApp/package-lock.json
+
+      - name: Restore .NET dependencies
+        run: dotnet restore src/FlatRate.slnx
+
+      - name: Build .NET
+        run: dotnet build src/FlatRate.slnx --no-restore
+
+      - name: Run .NET tests
+        run: dotnet test src/FlatRate.slnx --no-build --verbosity normal
+        env:
+          ConnectionStrings__DefaultConnection: Host=localhost;Database=flatrate;Username=flatrate;Password=flatrate
+
+      - name: Install Angular dependencies
+        working-directory: src/FlatRate.Web/ClientApp
+        run: npm ci
+
+      - name: Build Angular
+        working-directory: src/FlatRate.Web/ClientApp
+        run: npm run build
+
+      - name: Run Angular tests
+        working-directory: src/FlatRate.Web/ClientApp
+        run: npm test

@@ -47,6 +47,7 @@ coverage/
 # Build outputs
 publish/
 artifacts/
+src/FlatRate.Web/wwwroot/
 
 # E2E test results
 e2e-results/

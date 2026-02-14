@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,20 +91,35 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Apply database schema on startup
-using (var scope = app.Services.CreateScope())
+// Apply database migrations on startup
+const int maxRetries = 5;
+for (var i = 0; i < maxRetries; i++)
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<FlatRateDbContext>();
-    // In development/testing, use EnsureCreated for simplicity
-    // In production, this should use migrations
-    if (app.Environment.IsDevelopment())
+    try
     {
-        dbContext.Database.EnsureCreated();
-    }
-    else
-    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<FlatRateDbContext>();
         dbContext.Database.Migrate();
+        break;
     }
+    catch (Exception ex) when (i < maxRetries - 1)
+    {
+        app.Logger.LogWarning(ex, "Database migration attempt {Attempt}/{Max} failed, retrying...", i + 1, maxRetries);
+        Thread.Sleep(3000);
+    }
+}
+
+// Serve static files from wwwroot/browser (Angular 21 output) when available
+var webRootPath = app.Environment.WebRootPath;
+var angularAppExists = !string.IsNullOrEmpty(webRootPath) && Directory.Exists(Path.Combine(webRootPath, "browser"));
+
+if (angularAppExists)
+{
+    app.UseStaticFiles();
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(Path.Combine(webRootPath, "browser"))
+    });
 }
 
 app.UseAuthentication();
@@ -170,5 +186,11 @@ app.MapGet("/api/auth/user", async (HttpContext context, IMediator mediator) =>
         email = email
     });
 }).RequireAuthorization();
+
+// SPA fallback - serves index.html for client-side routing
+if (angularAppExists)
+{
+    app.MapFallbackToFile("browser/index.html");
+}
 
 app.Run();
