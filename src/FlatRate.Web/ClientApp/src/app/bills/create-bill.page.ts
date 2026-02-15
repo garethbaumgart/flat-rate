@@ -254,12 +254,13 @@ import { formatDateToISO } from '../core/utils/date-utils';
           </p>
           <div class="flex flex-col gap-4">
             <!-- Electricity -->
-            <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);">
-              <div class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
+            <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);"
+                 role="group" aria-labelledby="bill-electricity-legend">
+              <div id="bill-electricity-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
                    style="background: var(--color-bg-card); color: var(--color-warning);">
                 ⚡ Electricity
               </div>
-              <div class="grid grid-cols-1 gap-4" style="max-width: 33%;">
+              <div class="grid grid-cols-1 gap-4 md:max-w-[33%]">
                 <div class="flex flex-col gap-2">
                   <label for="elecRate" class="font-medium">Rate (per kWh)</label>
                   <p-inputNumber
@@ -280,8 +281,9 @@ import { formatDateToISO } from '../core/utils/date-utils';
             </div>
 
             <!-- Water -->
-            <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);">
-              <div class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
+            <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);"
+                 role="group" aria-labelledby="bill-water-legend">
+              <div id="bill-water-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
                    style="background: var(--color-bg-card); color: var(--color-info);">
                 💧 Water
               </div>
@@ -338,8 +340,9 @@ import { formatDateToISO } from '../core/utils/date-utils';
             </div>
 
             <!-- Sanitation -->
-            <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);">
-              <div class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
+            <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);"
+                 role="group" aria-labelledby="bill-sanitation-legend">
+              <div id="bill-sanitation-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
                    style="background: var(--color-bg-card); color: var(--color-success);">
                 ♻ Sanitation
               </div>

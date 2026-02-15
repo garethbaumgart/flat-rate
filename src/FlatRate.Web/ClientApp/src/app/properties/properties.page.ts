@@ -255,8 +255,9 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
         </div>
         <div class="flex flex-col gap-4">
           <!-- Electricity -->
-          <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);">
-            <div class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
+          <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);"
+               role="group" aria-labelledby="rates-electricity-legend">
+            <div id="rates-electricity-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
                  style="background: var(--color-bg-card); color: var(--color-warning);">
               ⚡ Electricity
             </div>
@@ -268,6 +269,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                   [(ngModel)]="ratesForm.electricityRate"
                   mode="decimal"
                   [useGrouping]="false"
+                  [min]="0"
                   [minFractionDigits]="2"
                   [maxFractionDigits]="4"
                   prefix="R "
@@ -278,8 +280,9 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
           </div>
 
           <!-- Water -->
-          <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);">
-            <div class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
+          <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);"
+               role="group" aria-labelledby="rates-water-legend">
+            <div id="rates-water-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
                  style="background: var(--color-bg-card); color: var(--color-info);">
               💧 Water
             </div>
@@ -291,6 +294,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                   [(ngModel)]="ratesForm.waterRateTier1"
                   mode="decimal"
                   [useGrouping]="false"
+                  [min]="0"
                   [minFractionDigits]="2"
                   [maxFractionDigits]="4"
                   prefix="R "
@@ -304,6 +308,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                   [(ngModel)]="ratesForm.waterRateTier2"
                   mode="decimal"
                   [useGrouping]="false"
+                  [min]="0"
                   [minFractionDigits]="2"
                   [maxFractionDigits]="4"
                   prefix="R "
@@ -317,6 +322,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                   [(ngModel)]="ratesForm.waterRateTier3"
                   mode="decimal"
                   [useGrouping]="false"
+                  [min]="0"
                   [minFractionDigits]="2"
                   [maxFractionDigits]="4"
                   prefix="R "
@@ -327,8 +333,9 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
           </div>
 
           <!-- Sanitation -->
-          <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);">
-            <div class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
+          <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);"
+               role="group" aria-labelledby="rates-sanitation-legend">
+            <div id="rates-sanitation-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
                  style="background: var(--color-bg-card); color: var(--color-success);">
               ♻ Sanitation
             </div>
@@ -340,6 +347,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                   [(ngModel)]="ratesForm.sanitationRateTier1"
                   mode="decimal"
                   [useGrouping]="false"
+                  [min]="0"
                   [minFractionDigits]="2"
                   [maxFractionDigits]="4"
                   prefix="R "
@@ -353,6 +361,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                   [(ngModel)]="ratesForm.sanitationRateTier2"
                   mode="decimal"
                   [useGrouping]="false"
+                  [min]="0"
                   [minFractionDigits]="2"
                   [maxFractionDigits]="4"
                   prefix="R "
@@ -366,6 +375,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                   [(ngModel)]="ratesForm.sanitationRateTier3"
                   mode="decimal"
                   [useGrouping]="false"
+                  [min]="0"
                   [minFractionDigits]="2"
                   [maxFractionDigits]="4"
                   prefix="R "
