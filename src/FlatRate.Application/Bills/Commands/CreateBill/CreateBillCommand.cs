@@ -7,8 +7,8 @@ namespace FlatRate.Application.Bills.Commands.CreateBill;
 /// </summary>
 public sealed record CreateBillCommand(
     Guid PropertyId,
-    DateTime PeriodStart,
-    DateTime PeriodEnd,
+    DateTimeOffset PeriodStart,
+    DateTimeOffset PeriodEnd,
     decimal ElectricityReadingOpening,
     decimal ElectricityReadingClosing,
     decimal WaterReadingOpening,

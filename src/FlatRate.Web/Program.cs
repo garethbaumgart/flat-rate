@@ -139,7 +139,7 @@ app.UseUserResolution(); // Resolve Google ID to internal user ID
 app.UseAuthorization();
 
 // Health check endpoint (no auth required)
-app.MapGet("/api/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+app.MapGet("/api/health", () => Results.Ok(new { status = "healthy", timestamp = DateTimeOffset.UtcNow }));
 
 // API endpoints
 app.MapPropertyEndpoints();

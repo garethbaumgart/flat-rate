@@ -11,8 +11,8 @@ public sealed class Bill : AggregateRoot
     public string InvoiceNumber { get; private set; } = string.Empty;
     public Guid PropertyId { get; private set; }
 
-    public DateTime PeriodStart { get; private set; }
-    public DateTime PeriodEnd { get; private set; }
+    public DateTimeOffset PeriodStart { get; private set; }
+    public DateTimeOffset PeriodEnd { get; private set; }
 
     // Meter readings
     public MeterReading ElectricityReading { get; private set; } = null!;
@@ -32,7 +32,7 @@ public sealed class Bill : AggregateRoot
     public decimal VatAmount { get; private set; }
     public decimal Total { get; private set; }
 
-    public DateTime CreatedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
 
     private Bill() : base()
     {
@@ -41,8 +41,8 @@ public sealed class Bill : AggregateRoot
     public static Bill Create(
         string invoiceNumber,
         Guid propertyId,
-        DateTime periodStart,
-        DateTime periodEnd,
+        DateTimeOffset periodStart,
+        DateTimeOffset periodEnd,
         MeterReading electricityReading,
         MeterReading waterReading,
         MeterReading sanitationReading,
@@ -79,7 +79,7 @@ public sealed class Bill : AggregateRoot
             ElectricityTariff = electricityTariff,
             WaterTariff = waterTariff,
             SanitationTariff = sanitationTariff,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
 
         // Calculate costs
