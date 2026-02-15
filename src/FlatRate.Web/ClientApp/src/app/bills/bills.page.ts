@@ -11,6 +11,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
 import { DividerModule } from 'primeng/divider';
+import { Tooltip } from 'primeng/tooltip';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { PropertyService } from '../core/services/property.service';
 import { BillService } from '../core/services/bill.service';
@@ -32,7 +33,8 @@ import { formatDateToISO } from '../core/utils/date-utils';
     ToastModule,
     ConfirmDialogModule,
     DialogModule,
-    DividerModule
+    DividerModule,
+    Tooltip
   ],
   providers: [MessageService, ConfirmationService],
   template: `
