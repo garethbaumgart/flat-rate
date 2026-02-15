@@ -76,6 +76,10 @@ test.describe('DateTimeOffset API Handling', () => {
       }
     });
 
+    if (createResponse.status() !== 201) {
+      const errorBody = await createResponse.text();
+      console.error('UTC bill creation failed:', createResponse.status(), errorBody);
+    }
     expect(createResponse.status()).toBe(201);
     const { id } = await createResponse.json();
 
@@ -107,8 +111,8 @@ test.describe('DateTimeOffset API Handling', () => {
       headers: mockAuthHeader,
       data: {
         propertyId,
-        periodStart: '2024-04-01T00:00:00+02:00',
-        periodEnd: '2024-04-30T00:00:00+02:00',
+        periodStart: '2024-06-01T00:00:00+02:00',
+        periodEnd: '2024-06-30T00:00:00+02:00',
         electricityReadingOpening: 12720,
         electricityReadingClosing: 12850,
         waterReadingOpening: 222,
@@ -125,6 +129,10 @@ test.describe('DateTimeOffset API Handling', () => {
       }
     });
 
+    if (createResponse.status() !== 201) {
+      const errorBody = await createResponse.text();
+      console.error('Bill creation failed:', createResponse.status(), errorBody);
+    }
     expect(createResponse.status()).toBe(201);
     const { id } = await createResponse.json();
 
@@ -137,7 +145,7 @@ test.describe('DateTimeOffset API Handling', () => {
     const bill = await getResponse.json();
     // The date should be stored and returned - UTC+2 midnight = UTC 22:00 previous day
     const periodStart = new Date(bill.periodStart);
-    expect(periodStart.toISOString()).toBe('2024-03-31T22:00:00.000Z');
+    expect(periodStart.toISOString()).toBe('2024-05-31T22:00:00.000Z');
   });
 
   test('API should accept date-only strings', async ({ request }) => {
