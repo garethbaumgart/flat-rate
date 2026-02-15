@@ -67,9 +67,17 @@ public sealed class InvoicePdfService
             // Left side: logo mark + brand text
             row.RelativeItem().Row(innerRow =>
             {
-                // Aurora Yellow logo square
-                innerRow.ConstantItem(34).Height(34).Background(Nord13).AlignCenter().AlignMiddle()
-                    .Text("\u26a1").FontSize(16);
+                // Aurora Yellow logo square with Voltage Arrow SVG
+                const string logoSvg = """
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+                      <rect width="80" height="80" rx="16" fill="#ebcb8b"/>
+                      <path d="M12,40 L22,40 L26,32 L30,48 L34,32 L38,48 L42,40 L52,40"
+                        fill="none" stroke="#2e3440" stroke-width="4"
+                        stroke-linecap="round" stroke-linejoin="round"/>
+                      <polygon points="52,30 68,40 52,50" fill="#2e3440"/>
+                    </svg>
+                    """;
+                innerRow.ConstantItem(34).Height(34).Svg(logoSvg);
 
                 innerRow.ConstantItem(12); // spacer
 
@@ -84,7 +92,7 @@ public sealed class InvoicePdfService
             row.ConstantItem(180).AlignRight().Column(col =>
             {
                 col.Item().AlignRight().Container()
-                    .Background(Nord1).PaddingVertical(4).PaddingHorizontal(12)
+                    .Background(Nord1).CornerRadius(3).PaddingVertical(4).PaddingHorizontal(12)
                     .Text("INVOICE").FontSize(8).Bold().FontColor(Nord13).LetterSpacing(0.12f);
 
                 col.Item().PaddingTop(4).AlignRight()
@@ -118,7 +126,7 @@ public sealed class InvoicePdfService
 
     private static void ComposeInfoGrid(IContainer container, BillDto bill, string propertyName, string propertyAddress)
     {
-        container.Border(1).BorderColor(Nord5).Padding(14).Row(row =>
+        container.Border(1).BorderColor(Nord5).CornerRadius(6).Padding(14).Row(row =>
         {
             InfoGridCell(row, "BILLED TO", propertyName);
             InfoGridCell(row, "LOCATION", propertyAddress);
@@ -233,7 +241,7 @@ public sealed class InvoicePdfService
         var valueColor = isDark ? Nord13 : Nord0;
         var labelColor = isDark ? Nord4 : Nord3;
 
-        container.Background(bgColor).Padding(12).Column(col =>
+        container.Background(bgColor).CornerRadius(6).Padding(12).Column(col =>
         {
             col.Item().AlignCenter().Text(label).FontSize(7).FontColor(labelColor).LetterSpacing(0.08f);
             col.Item().PaddingTop(4).AlignCenter().Text(value).FontSize(13).Bold().FontColor(valueColor);
@@ -260,21 +268,26 @@ public sealed class InvoicePdfService
 
     private static void BodyCell(TableDescriptor table, string text, bool alignRight, bool lastRow)
     {
-        IContainer cell = lastRow
-            ? table.Cell().Padding(8)
-            : table.Cell().BorderBottom(1).BorderColor(Nord5).Padding(8);
+        table.Cell().Column(col =>
+        {
+            IContainer cell = col.Item().Padding(8);
+            if (alignRight)
+                cell = cell.AlignRight();
+            cell.Text(text).FontSize(9).FontColor(Nord0);
 
-        if (alignRight)
-            cell = cell.AlignRight();
-        cell.Text(text).FontSize(9).FontColor(Nord0);
+            if (!lastRow)
+                col.Item().LineHorizontal(0.5f).LineColor(Nord5).LineDashPattern([4f, 3f]);
+        });
     }
 
     private static void BodyCellBold(TableDescriptor table, string text, bool lastRow)
     {
-        var cell = lastRow
-            ? table.Cell().Padding(8)
-            : table.Cell().BorderBottom(1).BorderColor(Nord5).Padding(8);
+        table.Cell().Column(col =>
+        {
+            col.Item().Padding(8).AlignRight().Text(text).FontSize(9).Bold().FontColor(Nord0);
 
-        cell.AlignRight().Text(text).FontSize(9).Bold().FontColor(Nord0);
+            if (!lastRow)
+                col.Item().LineHorizontal(0.5f).LineColor(Nord5).LineDashPattern([4f, 3f]);
+        });
     }
 }
