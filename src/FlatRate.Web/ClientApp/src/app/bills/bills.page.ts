@@ -15,6 +15,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { PropertyService } from '../core/services/property.service';
 import { BillService } from '../core/services/bill.service';
 import { Bill } from '../core/models/bill.model';
+import { formatDateToISO } from '../core/utils/date-utils';
 
 @Component({
   selector: 'app-bills',
@@ -362,12 +363,12 @@ export class BillsPage implements OnInit {
     }
 
     if (startDate) {
-      const startDateStr = startDate.toISOString().split('T')[0];
+      const startDateStr = formatDateToISO(startDate);
       bills = bills.filter(b => b.periodStart >= startDateStr);
     }
 
     if (endDate) {
-      const endDateStr = endDate.toISOString().split('T')[0];
+      const endDateStr = formatDateToISO(endDate);
       bills = bills.filter(b => b.periodEnd <= endDateStr);
     }
 

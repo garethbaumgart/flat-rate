@@ -15,6 +15,7 @@ import { PropertyService } from '../core/services/property.service';
 import { BillService } from '../core/services/bill.service';
 import { Property } from '../core/models/property.model';
 import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
+import { formatDateToISO } from '../core/utils/date-utils';
 
 @Component({
   selector: 'app-create-bill',
@@ -624,6 +625,6 @@ export class CreateBillPage implements OnInit {
   }
 
   private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+    return formatDateToISO(date);
   }
 }
