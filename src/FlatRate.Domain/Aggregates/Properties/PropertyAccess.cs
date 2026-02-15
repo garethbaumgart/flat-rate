@@ -12,8 +12,8 @@ public sealed class PropertyAccess : Entity
     public Guid? UserId { get; private set; }
     public string? InvitedEmail { get; private set; }
     public PropertyRole Role { get; private set; }
-    public DateTime CreatedAt { get; private set; }
-    public DateTime? AcceptedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
+    public DateTimeOffset? AcceptedAt { get; private set; }
 
     private PropertyAccess() : base()
     {
@@ -30,7 +30,7 @@ public sealed class PropertyAccess : Entity
         if (userId == Guid.Empty)
             throw new ArgumentException("User ID cannot be empty.", nameof(userId));
 
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         return new PropertyAccess
         {
             PropertyId = propertyId,
@@ -60,7 +60,7 @@ public sealed class PropertyAccess : Entity
             UserId = null,
             InvitedEmail = email.Trim().ToLowerInvariant(),
             Role = role,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTimeOffset.UtcNow,
             AcceptedAt = null
         };
     }
@@ -78,7 +78,7 @@ public sealed class PropertyAccess : Entity
 
         UserId = userId;
         InvitedEmail = null;
-        AcceptedAt = DateTime.UtcNow;
+        AcceptedAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>

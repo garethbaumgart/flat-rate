@@ -7,8 +7,8 @@ public sealed record BillDto(
     Guid Id,
     string InvoiceNumber,
     Guid PropertyId,
-    DateTime PeriodStart,
-    DateTime PeriodEnd,
+    DateTimeOffset PeriodStart,
+    DateTimeOffset PeriodEnd,
     MeterReadingDto ElectricityReading,
     MeterReadingDto WaterReading,
     MeterReadingDto SanitationReading,
@@ -18,7 +18,7 @@ public sealed record BillDto(
     decimal Subtotal,
     decimal VatAmount,
     decimal Total,
-    DateTime CreatedAt);
+    DateTimeOffset CreatedAt);
 
 /// <summary>
 /// Data transfer object for meter reading.

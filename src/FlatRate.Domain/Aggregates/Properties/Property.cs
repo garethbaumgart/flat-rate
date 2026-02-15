@@ -23,8 +23,8 @@ public sealed class Property : AggregateRoot
     public decimal? DefaultSanitationRateTier2 { get; private set; }
     public decimal? DefaultSanitationRateTier3 { get; private set; }
 
-    public DateTime CreatedAt { get; private set; }
-    public DateTime? UpdatedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
+    public DateTimeOffset? UpdatedAt { get; private set; }
 
     private Property() : base()
     {
@@ -42,7 +42,7 @@ public sealed class Property : AggregateRoot
         {
             Name = name.Trim(),
             Address = address.Trim(),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
     }
 
@@ -56,7 +56,7 @@ public sealed class Property : AggregateRoot
 
         Name = name.Trim();
         Address = address.Trim();
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     public void SetDefaultElectricityRate(decimal rate)
@@ -65,7 +65,7 @@ public sealed class Property : AggregateRoot
             throw new ArgumentException("Electricity rate cannot be negative.", nameof(rate));
 
         DefaultElectricityRate = rate;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     public void SetDefaultWaterRates(decimal tier1Rate, decimal tier2Rate, decimal tier3Rate)
@@ -80,7 +80,7 @@ public sealed class Property : AggregateRoot
         DefaultWaterRateTier1 = tier1Rate;
         DefaultWaterRateTier2 = tier2Rate;
         DefaultWaterRateTier3 = tier3Rate;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     public void SetDefaultSanitationRates(decimal tier1Rate, decimal tier2Rate, decimal tier3Rate)
@@ -95,7 +95,7 @@ public sealed class Property : AggregateRoot
         DefaultSanitationRateTier1 = tier1Rate;
         DefaultSanitationRateTier2 = tier2Rate;
         DefaultSanitationRateTier3 = tier3Rate;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     public void ClearDefaultRates()
@@ -107,6 +107,6 @@ public sealed class Property : AggregateRoot
         DefaultSanitationRateTier1 = null;
         DefaultSanitationRateTier2 = null;
         DefaultSanitationRateTier3 = null;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

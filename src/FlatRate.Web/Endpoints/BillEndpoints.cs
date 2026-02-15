@@ -123,8 +123,8 @@ public static class BillEndpoints
 
 public record CreateBillRequest(
     Guid PropertyId,
-    DateTime PeriodStart,
-    DateTime PeriodEnd,
+    DateTimeOffset PeriodStart,
+    DateTimeOffset PeriodEnd,
     decimal ElectricityReadingOpening,
     decimal ElectricityReadingClosing,
     decimal WaterReadingOpening,

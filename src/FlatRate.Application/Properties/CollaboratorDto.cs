@@ -11,5 +11,5 @@ public sealed record CollaboratorDto(
     string? Name,
     PropertyRole Role,
     bool IsPending,
-    DateTime CreatedAt,
-    DateTime? AcceptedAt);
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? AcceptedAt);

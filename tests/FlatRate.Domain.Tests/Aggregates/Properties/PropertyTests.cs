@@ -17,7 +17,7 @@ public class PropertyTests
         property.Name.Should().Be("Flat 1");
         property.Address.Should().Be("123 Main Street");
         property.Id.Should().NotBeEmpty();
-        property.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        property.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
         property.UpdatedAt.Should().BeNull();
     }
 
@@ -98,7 +98,7 @@ public class PropertyTests
         property.Name.Should().Be("Flat 2");
         property.Address.Should().Be("456 Other Street");
         property.CreatedAt.Should().Be(originalCreatedAt);
-        property.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        property.UpdatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class PropertyTests
 
         // Assert
         property.DefaultElectricityRate.Should().Be(rate);
-        property.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        property.UpdatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     [Fact]
@@ -201,7 +201,7 @@ public class PropertyTests
         property.DefaultWaterRateTier1.Should().Be(20.80m);
         property.DefaultWaterRateTier2.Should().Be(34.20m);
         property.DefaultWaterRateTier3.Should().Be(48.50m);
-        property.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        property.UpdatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     [Fact]
@@ -263,7 +263,7 @@ public class PropertyTests
         property.DefaultSanitationRateTier1.Should().Be(25.50m);
         property.DefaultSanitationRateTier2.Should().Be(20.50m);
         property.DefaultSanitationRateTier3.Should().Be(29.80m);
-        property.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        property.UpdatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     [Fact]
@@ -332,7 +332,34 @@ public class PropertyTests
         property.DefaultSanitationRateTier1.Should().BeNull();
         property.DefaultSanitationRateTier2.Should().BeNull();
         property.DefaultSanitationRateTier3.Should().BeNull();
-        property.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        property.UpdatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
+    #endregion
+
+    #region DateTimeOffset Tests
+
+    [Fact]
+    public void Create_ShouldStoreCreatedAtWithZeroUtcOffset()
+    {
+        // Arrange & Act
+        var property = Property.Create("Test", "123 Main St");
+
+        // Assert
+        property.CreatedAt.Offset.Should().Be(TimeSpan.Zero);
+    }
+
+    [Fact]
+    public void Update_ShouldStoreUpdatedAtWithZeroUtcOffset()
+    {
+        // Arrange
+        var property = Property.Create("Test", "123 Main St");
+
+        // Act
+        property.Update("Updated", "456 Oak Ave");
+
+        // Assert
+        property.UpdatedAt!.Value.Offset.Should().Be(TimeSpan.Zero);
     }
 
     #endregion

@@ -7,8 +7,8 @@ namespace FlatRate.Domain.Tests.Aggregates.Bills;
 public class BillTests
 {
     private readonly Guid _propertyId = Guid.NewGuid();
-    private readonly DateTime _periodStart = new(2024, 4, 1);
-    private readonly DateTime _periodEnd = new(2024, 4, 30);
+    private readonly DateTimeOffset _periodStart = new(2024, 4, 1, 0, 0, 0, TimeSpan.Zero);
+    private readonly DateTimeOffset _periodEnd = new(2024, 4, 30, 0, 0, 0, TimeSpan.Zero);
 
     private MeterReading CreateElectricityReading() => MeterReading.Create(12720, 12850);
     private MeterReading CreateWaterReading() => MeterReading.Create(222, 230);
@@ -41,7 +41,7 @@ public class BillTests
         bill.PeriodStart.Should().Be(_periodStart);
         bill.PeriodEnd.Should().Be(_periodEnd);
         bill.Id.Should().NotBeEmpty();
-        bill.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        bill.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class BillTests
     public void Create_WithSamePeriodStartAndEnd_ReturnsBill()
     {
         // Arrange
-        var sameDate = new DateTime(2024, 4, 1);
+        var sameDate = new DateTimeOffset(2024, 4, 1, 0, 0, 0, TimeSpan.Zero);
 
         // Act
         var bill = Bill.Create(
@@ -427,6 +427,84 @@ public class BillTests
         bill.WaterCost.Should().Be(193.20m);
         bill.SanitationCost.Should().Be(194.00m);
         bill.Total.Should().Be(originalTotal);
+    }
+
+    #endregion
+
+    #region DateTimeOffset Tests
+
+    [Fact]
+    public void Create_ShouldStoreCreatedAtAsUtc()
+    {
+        // Arrange & Act
+        var bill = Bill.Create(
+            "UTIL-0001",
+            _propertyId,
+            _periodStart,
+            _periodEnd,
+            CreateElectricityReading(),
+            CreateWaterReading(),
+            CreateSanitationReading(),
+            CreateElectricityTariff(),
+            CreateWaterTariff(),
+            CreateSanitationTariff());
+
+        // Assert
+        bill.CreatedAt.Offset.Should().Be(TimeSpan.Zero, "CreatedAt should be stored as UTC");
+    }
+
+    [Fact]
+    public void Create_WithUtcOffsetDates_ShouldPreserveValues()
+    {
+        // Arrange
+        var start = new DateTimeOffset(2024, 4, 1, 0, 0, 0, TimeSpan.Zero);
+        var end = new DateTimeOffset(2024, 4, 30, 0, 0, 0, TimeSpan.Zero);
+
+        // Act
+        var bill = Bill.Create(
+            "UTIL-0001",
+            _propertyId,
+            start,
+            end,
+            CreateElectricityReading(),
+            CreateWaterReading(),
+            CreateSanitationReading(),
+            CreateElectricityTariff(),
+            CreateWaterTariff(),
+            CreateSanitationTariff());
+
+        // Assert
+        bill.PeriodStart.Should().Be(start);
+        bill.PeriodEnd.Should().Be(end);
+    }
+
+    [Fact]
+    public void Create_WithPositiveOffsetDates_ShouldNormalizeToUtc()
+    {
+        // Arrange - South Africa is UTC+2
+        var saOffset = TimeSpan.FromHours(2);
+        var start = new DateTimeOffset(2024, 4, 1, 0, 0, 0, saOffset);
+        var end = new DateTimeOffset(2024, 4, 30, 0, 0, 0, saOffset);
+
+        // Act
+        var bill = Bill.Create(
+            "UTIL-0001",
+            _propertyId,
+            start,
+            end,
+            CreateElectricityReading(),
+            CreateWaterReading(),
+            CreateSanitationReading(),
+            CreateElectricityTariff(),
+            CreateWaterTariff(),
+            CreateSanitationTariff());
+
+        // Assert - Values should be converted to UTC (offset = 0)
+        bill.PeriodStart.Offset.Should().Be(TimeSpan.Zero, "PeriodStart should be normalized to UTC");
+        bill.PeriodEnd.Offset.Should().Be(TimeSpan.Zero, "PeriodEnd should be normalized to UTC");
+        // UTC+2 midnight = UTC 22:00 previous day
+        bill.PeriodStart.Should().Be(new DateTimeOffset(2024, 3, 31, 22, 0, 0, TimeSpan.Zero));
+        bill.PeriodEnd.Should().Be(new DateTimeOffset(2024, 4, 29, 22, 0, 0, TimeSpan.Zero));
     }
 
     #endregion

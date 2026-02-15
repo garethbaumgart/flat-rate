@@ -16,6 +16,6 @@ public sealed record PropertyDto(
     decimal? DefaultSanitationRateTier1,
     decimal? DefaultSanitationRateTier2,
     decimal? DefaultSanitationRateTier3,
-    DateTime CreatedAt,
-    DateTime? UpdatedAt,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt,
     PropertyRole CurrentUserRole);

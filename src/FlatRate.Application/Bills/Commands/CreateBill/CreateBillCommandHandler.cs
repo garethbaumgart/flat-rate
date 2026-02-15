@@ -56,15 +56,11 @@ public sealed class CreateBillCommandHandler : IRequestHandler<CreateBillCommand
         var waterTariff = Tariff.CreateTiered(request.WaterRateTier1, request.WaterRateTier2, request.WaterRateTier3);
         var sanitationTariff = Tariff.CreateTiered(request.SanitationRateTier1, request.SanitationRateTier2, request.SanitationRateTier3);
 
-        // Ensure dates are UTC for PostgreSQL compatibility
-        var periodStart = DateTime.SpecifyKind(request.PeriodStart, DateTimeKind.Utc);
-        var periodEnd = DateTime.SpecifyKind(request.PeriodEnd, DateTimeKind.Utc);
-
         var bill = Bill.Create(
             invoiceNumber,
             request.PropertyId,
-            periodStart,
-            periodEnd,
+            request.PeriodStart,
+            request.PeriodEnd,
             electricityReading,
             waterReading,
             sanitationReading,

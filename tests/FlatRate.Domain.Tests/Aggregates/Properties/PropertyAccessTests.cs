@@ -54,7 +54,7 @@ public class PropertyAccessTests
         var access = PropertyAccess.CreateForUser(propertyId, userId, PropertyRole.Editor);
 
         // Assert
-        access.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        access.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     #endregion
@@ -134,7 +134,7 @@ public class PropertyAccessTests
         var access = PropertyAccess.CreatePendingInvite(Guid.NewGuid(), "user@example.com", PropertyRole.Editor);
 
         // Assert
-        access.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        access.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     #endregion
@@ -205,7 +205,7 @@ public class PropertyAccessTests
         access.IsPending.Should().BeFalse();
         access.InvitedEmail.Should().BeNull();
         access.AcceptedAt.Should().NotBeNull();
-        access.AcceptedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        access.AcceptedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     [Fact]
@@ -249,7 +249,7 @@ public class PropertyAccessTests
         // Assert
         access.CreatedAt.Should().Be(originalCreatedAt);
         access.AcceptedAt.Should().NotBeNull();
-        access.AcceptedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        access.AcceptedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     #endregion
