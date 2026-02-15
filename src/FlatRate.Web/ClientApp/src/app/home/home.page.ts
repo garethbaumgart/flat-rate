@@ -20,9 +20,18 @@ import { AuthService } from '../core/services/auth.service';
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="text-center">
             <!-- Logo Icon -->
-            <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl gradient-accent mb-8 shadow-lg">
-              <i class="pi pi-bolt text-white text-4xl"></i>
-            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" class="w-20 h-20 mb-8 inline-block" style="filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));" role="img" aria-label="FlatRate logo">
+              <defs>
+                <clipPath id="heroLogo"><rect width="80" height="80" rx="18"/></clipPath>
+                <filter id="heroGlow"><feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#2e3440" flood-opacity="0.2"/></filter>
+              </defs>
+              <g clip-path="url(#heroLogo)">
+                <rect width="80" height="80" fill="#2e3440"/>
+                <path d="M12,40 L22,40 L26,32 L30,48 L34,32 L38,48 L42,40 L52,40" fill="none" stroke="#ebcb8b" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".15"/>
+                <path d="M12,40 L22,40 L26,32 L30,48 L34,32 L38,48 L42,40 L52,40" fill="none" stroke="#ebcb8b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#heroGlow)"/>
+                <polygon points="52,30 68,40 52,50" fill="#ebcb8b"/>
+              </g>
+            </svg>
 
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" style="color: var(--color-text-primary);">
               Utility Billing

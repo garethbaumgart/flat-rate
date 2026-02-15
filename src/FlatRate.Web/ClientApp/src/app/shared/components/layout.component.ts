@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { ThemeService } from '../../core/services/theme.service';
@@ -16,9 +16,18 @@ import { AuthService } from '../../core/services/auth.service';
           <div class="flex justify-between items-center h-16">
             <!-- Logo -->
             <a routerLink="/" class="flex items-center gap-3 no-underline">
-              <div class="w-10 h-10 rounded-lg flex items-center justify-center gradient-accent">
-                <i class="pi pi-bolt text-white text-lg"></i>
-              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" class="w-10 h-10" role="img" aria-label="FlatRate logo">
+                <defs>
+                  <clipPath id="navLogo"><rect width="80" height="80" rx="18"/></clipPath>
+                  <filter id="navGlow"><feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#2e3440" flood-opacity="0.2"/></filter>
+                </defs>
+                <g clip-path="url(#navLogo)">
+                  <rect width="80" height="80" fill="#2e3440"/>
+                  <path d="M12,40 L22,40 L26,32 L30,48 L34,32 L38,48 L42,40 L52,40" fill="none" stroke="#ebcb8b" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".15"/>
+                  <path d="M12,40 L22,40 L26,32 L30,48 L34,32 L38,48 L42,40 L52,40" fill="none" stroke="#ebcb8b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#navGlow)"/>
+                  <polygon points="52,30 68,40 52,50" fill="#ebcb8b"/>
+                </g>
+              </svg>
               <span class="text-xl font-bold" style="color: var(--color-text-primary);">FlatRate</span>
             </a>
 
@@ -82,6 +91,7 @@ import { AuthService } from '../../core/services/auth.service';
                     class="p-2 rounded-lg transition-colors hover:bg-[var(--color-error-bg)]"
                     style="color: var(--color-text-secondary);"
                     title="Sign out"
+                    aria-label="Sign out"
                   >
                     <i class="pi pi-sign-out text-lg"></i>
                   </button>
@@ -113,17 +123,17 @@ import { AuthService } from '../../core/services/auth.service';
               <button
                 class="mobile-menu-btn p-2 rounded-lg"
                 style="color: var(--color-text-secondary);"
-                (click)="mobileMenuOpen = !mobileMenuOpen"
+                (click)="toggleMobileMenu()"
                 aria-label="Toggle mobile menu"
               >
-                <i class="pi" [class.pi-bars]="!mobileMenuOpen" [class.pi-times]="mobileMenuOpen"></i>
+                <i class="pi" [class.pi-bars]="!mobileMenuOpen()" [class.pi-times]="mobileMenuOpen()"></i>
               </button>
             </div>
           </div>
         </div>
 
         <!-- Mobile Navigation -->
-        @if (mobileMenuOpen) {
+        @if (mobileMenuOpen()) {
           <div class="mobile-nav-container border-t" style="border-color: var(--color-border); background: var(--glass-bg);">
             <nav class="px-4 py-3 flex flex-col gap-1">
               @if (authService.isAuthenticated()) {
@@ -144,7 +154,7 @@ import { AuthService } from '../../core/services/auth.service';
                 routerLinkActive="active-nav-link-mobile"
                 [routerLinkActiveOptions]="{ exact: true }"
                 class="mobile-nav-link"
-                (click)="mobileMenuOpen = false"
+                (click)="mobileMenuOpen.set(false)"
               >
                 <i class="pi pi-home mr-3"></i>
                 Home
@@ -155,7 +165,7 @@ import { AuthService } from '../../core/services/auth.service';
                   routerLink="/properties"
                   routerLinkActive="active-nav-link-mobile"
                   class="mobile-nav-link"
-                  (click)="mobileMenuOpen = false"
+                  (click)="mobileMenuOpen.set(false)"
                 >
                   <i class="pi pi-building mr-3"></i>
                   Properties
@@ -165,7 +175,7 @@ import { AuthService } from '../../core/services/auth.service';
                   routerLinkActive="active-nav-link-mobile"
                   [routerLinkActiveOptions]="{ exact: true }"
                   class="mobile-nav-link"
-                  (click)="mobileMenuOpen = false"
+                  (click)="mobileMenuOpen.set(false)"
                 >
                   <i class="pi pi-file mr-3"></i>
                   Bills
@@ -174,7 +184,7 @@ import { AuthService } from '../../core/services/auth.service';
                   routerLink="/bills/create"
                   routerLinkActive="active-nav-link-mobile"
                   class="mobile-nav-link"
-                  (click)="mobileMenuOpen = false"
+                  (click)="mobileMenuOpen.set(false)"
                 >
                   <i class="pi pi-plus mr-3"></i>
                   Create Bill
@@ -183,7 +193,7 @@ import { AuthService } from '../../core/services/auth.service';
                 <div class="border-t my-2" style="border-color: var(--color-border);"></div>
 
                 <button
-                  (click)="authService.logout(); mobileMenuOpen = false"
+                  (click)="authService.logout(); mobileMenuOpen.set(false)"
                   class="mobile-nav-link text-left w-full"
                   style="color: var(--color-error);"
                 >
@@ -192,7 +202,7 @@ import { AuthService } from '../../core/services/auth.service';
                 </button>
               } @else {
                 <button
-                  (click)="authService.login(); mobileMenuOpen = false"
+                  (click)="authService.login(); mobileMenuOpen.set(false)"
                   class="mobile-nav-link text-left w-full"
                   style="color: var(--color-accent);"
                 >
@@ -322,7 +332,11 @@ import { AuthService } from '../../core/services/auth.service';
 export class LayoutComponent {
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
-  mobileMenuOpen: boolean = false;
+  readonly mobileMenuOpen = signal(false);
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen.update(v => !v);
+  }
 
   getInitials(name: string | undefined): string {
     if (!name) return '?';
