@@ -261,6 +261,8 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
             <p-inputNumber
               id="electricityRate"
               [(ngModel)]="ratesForm.electricityRate"
+              mode="decimal"
+              [useGrouping]="false"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
@@ -276,6 +278,8 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
             <p-inputNumber
               id="waterTier1"
               [(ngModel)]="ratesForm.waterRateTier1"
+              mode="decimal"
+              [useGrouping]="false"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
@@ -289,6 +293,8 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
             <p-inputNumber
               id="sanitationTier1"
               [(ngModel)]="ratesForm.sanitationRateTier1"
+              mode="decimal"
+              [useGrouping]="false"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
@@ -303,6 +309,8 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
             <p-inputNumber
               id="waterTier2"
               [(ngModel)]="ratesForm.waterRateTier2"
+              mode="decimal"
+              [useGrouping]="false"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
@@ -316,6 +324,8 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
             <p-inputNumber
               id="sanitationTier2"
               [(ngModel)]="ratesForm.sanitationRateTier2"
+              mode="decimal"
+              [useGrouping]="false"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
@@ -330,6 +340,8 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
             <p-inputNumber
               id="waterTier3"
               [(ngModel)]="ratesForm.waterRateTier3"
+              mode="decimal"
+              [useGrouping]="false"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
@@ -343,6 +355,8 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
             <p-inputNumber
               id="sanitationTier3"
               [(ngModel)]="ratesForm.sanitationRateTier3"
+              mode="decimal"
+              [useGrouping]="false"
               [minFractionDigits]="2"
               [maxFractionDigits]="4"
               prefix="R "
