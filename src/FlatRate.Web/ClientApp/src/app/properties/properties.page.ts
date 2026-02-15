@@ -242,7 +242,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
       header="Set Default Rates"
       [(visible)]="showRatesDialog"
       [modal]="true"
-      [style]="{ width: '90vw', maxWidth: '600px' }"
+      [style]="{ width: '90vw', maxWidth: '700px' }"
     >
       @if (selectedProperty()) {
         <div class="mb-6 p-4 rounded-lg" style="background: var(--color-bg-tertiary);">
@@ -253,115 +253,136 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
               tooltipPosition="top"></i>
           </p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="flex flex-col gap-2">
-            <label for="electricityRate" class="font-medium" style="color: var(--color-text-primary);">
-              Electricity Rate (per kWh)
-            </label>
-            <p-inputNumber
-              id="electricityRate"
-              [(ngModel)]="ratesForm.electricityRate"
-              mode="decimal"
-              [useGrouping]="false"
-              [minFractionDigits]="2"
-              [maxFractionDigits]="4"
-              prefix="R "
-              styleClass="w-full"
-            />
-          </div>
-          <div></div>
-
-          <div class="flex flex-col gap-2">
-            <label for="waterTier1" class="font-medium" style="color: var(--color-text-primary);">
-              Water Tier 1 (0-6 kL)
-            </label>
-            <p-inputNumber
-              id="waterTier1"
-              [(ngModel)]="ratesForm.waterRateTier1"
-              mode="decimal"
-              [useGrouping]="false"
-              [minFractionDigits]="2"
-              [maxFractionDigits]="4"
-              prefix="R "
-              styleClass="w-full"
-            />
-          </div>
-          <div class="flex flex-col gap-2">
-            <label for="sanitationTier1" class="font-medium" style="color: var(--color-text-primary);">
-              Sanitation Tier 1 (0-6 kL)
-            </label>
-            <p-inputNumber
-              id="sanitationTier1"
-              [(ngModel)]="ratesForm.sanitationRateTier1"
-              mode="decimal"
-              [useGrouping]="false"
-              [minFractionDigits]="2"
-              [maxFractionDigits]="4"
-              prefix="R "
-              styleClass="w-full"
-            />
+        <div class="flex flex-col gap-4">
+          <!-- Electricity -->
+          <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);"
+               role="group" aria-labelledby="rates-electricity-legend">
+            <div id="rates-electricity-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
+                 style="background: var(--color-bg-card); color: var(--color-warning);">
+              ⚡ Electricity
+            </div>
+            <div class="grid grid-cols-1 gap-4">
+              <div class="flex flex-col gap-2">
+                <label for="electricityRate" class="font-medium" style="color: var(--color-text-primary);">Rate (per kWh)</label>
+                <p-inputNumber
+                  id="electricityRate"
+                  [(ngModel)]="ratesForm.electricityRate"
+                  mode="decimal"
+                  [useGrouping]="false"
+                  [min]="0"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="4"
+                  prefix="R "
+                  styleClass="w-full"
+                />
+              </div>
+            </div>
           </div>
 
-          <div class="flex flex-col gap-2">
-            <label for="waterTier2" class="font-medium" style="color: var(--color-text-primary);">
-              Water Tier 2 (7-15 kL)
-            </label>
-            <p-inputNumber
-              id="waterTier2"
-              [(ngModel)]="ratesForm.waterRateTier2"
-              mode="decimal"
-              [useGrouping]="false"
-              [minFractionDigits]="2"
-              [maxFractionDigits]="4"
-              prefix="R "
-              styleClass="w-full"
-            />
-          </div>
-          <div class="flex flex-col gap-2">
-            <label for="sanitationTier2" class="font-medium" style="color: var(--color-text-primary);">
-              Sanitation Tier 2 (7-15 kL)
-            </label>
-            <p-inputNumber
-              id="sanitationTier2"
-              [(ngModel)]="ratesForm.sanitationRateTier2"
-              mode="decimal"
-              [useGrouping]="false"
-              [minFractionDigits]="2"
-              [maxFractionDigits]="4"
-              prefix="R "
-              styleClass="w-full"
-            />
+          <!-- Water -->
+          <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);"
+               role="group" aria-labelledby="rates-water-legend">
+            <div id="rates-water-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
+                 style="background: var(--color-bg-card); color: var(--color-info);">
+              💧 Water
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="flex flex-col gap-2">
+                <label for="waterTier1" class="font-medium" style="color: var(--color-text-primary);">Tier 1 (0–6 kL)</label>
+                <p-inputNumber
+                  id="waterTier1"
+                  [(ngModel)]="ratesForm.waterRateTier1"
+                  mode="decimal"
+                  [useGrouping]="false"
+                  [min]="0"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="4"
+                  prefix="R "
+                  styleClass="w-full"
+                />
+              </div>
+              <div class="flex flex-col gap-2">
+                <label for="waterTier2" class="font-medium" style="color: var(--color-text-primary);">Tier 2 (7–15 kL)</label>
+                <p-inputNumber
+                  id="waterTier2"
+                  [(ngModel)]="ratesForm.waterRateTier2"
+                  mode="decimal"
+                  [useGrouping]="false"
+                  [min]="0"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="4"
+                  prefix="R "
+                  styleClass="w-full"
+                />
+              </div>
+              <div class="flex flex-col gap-2">
+                <label for="waterTier3" class="font-medium" style="color: var(--color-text-primary);">Tier 3 (16+ kL)</label>
+                <p-inputNumber
+                  id="waterTier3"
+                  [(ngModel)]="ratesForm.waterRateTier3"
+                  mode="decimal"
+                  [useGrouping]="false"
+                  [min]="0"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="4"
+                  prefix="R "
+                  styleClass="w-full"
+                />
+              </div>
+            </div>
           </div>
 
-          <div class="flex flex-col gap-2">
-            <label for="waterTier3" class="font-medium" style="color: var(--color-text-primary);">
-              Water Tier 3 (16+ kL)
-            </label>
-            <p-inputNumber
-              id="waterTier3"
-              [(ngModel)]="ratesForm.waterRateTier3"
-              mode="decimal"
-              [useGrouping]="false"
-              [minFractionDigits]="2"
-              [maxFractionDigits]="4"
-              prefix="R "
-              styleClass="w-full"
-            />
-          </div>
-          <div class="flex flex-col gap-2">
-            <label for="sanitationTier3" class="font-medium" style="color: var(--color-text-primary);">
-              Sanitation Tier 3 (16+ kL)
-            </label>
-            <p-inputNumber
-              id="sanitationTier3"
-              [(ngModel)]="ratesForm.sanitationRateTier3"
-              mode="decimal"
-              [useGrouping]="false"
-              [minFractionDigits]="2"
-              [maxFractionDigits]="4"
-              prefix="R "
-              styleClass="w-full"
-            />
+          <!-- Sanitation -->
+          <div class="relative rounded-[10px] border-[1.5px] p-4 pt-5" style="border-color: var(--color-border);"
+               role="group" aria-labelledby="rates-sanitation-legend">
+            <div id="rates-sanitation-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
+                 style="background: var(--color-bg-card); color: var(--color-success);">
+              ♻ Sanitation
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="flex flex-col gap-2">
+                <label for="sanitationTier1" class="font-medium" style="color: var(--color-text-primary);">Tier 1 (0–6 kL)</label>
+                <p-inputNumber
+                  id="sanitationTier1"
+                  [(ngModel)]="ratesForm.sanitationRateTier1"
+                  mode="decimal"
+                  [useGrouping]="false"
+                  [min]="0"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="4"
+                  prefix="R "
+                  styleClass="w-full"
+                />
+              </div>
+              <div class="flex flex-col gap-2">
+                <label for="sanitationTier2" class="font-medium" style="color: var(--color-text-primary);">Tier 2 (7–15 kL)</label>
+                <p-inputNumber
+                  id="sanitationTier2"
+                  [(ngModel)]="ratesForm.sanitationRateTier2"
+                  mode="decimal"
+                  [useGrouping]="false"
+                  [min]="0"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="4"
+                  prefix="R "
+                  styleClass="w-full"
+                />
+              </div>
+              <div class="flex flex-col gap-2">
+                <label for="sanitationTier3" class="font-medium" style="color: var(--color-text-primary);">Tier 3 (16+ kL)</label>
+                <p-inputNumber
+                  id="sanitationTier3"
+                  [(ngModel)]="ratesForm.sanitationRateTier3"
+                  mode="decimal"
+                  [useGrouping]="false"
+                  [min]="0"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="4"
+                  prefix="R "
+                  styleClass="w-full"
+                />
+              </div>
+            </div>
           </div>
         </div>
       }
