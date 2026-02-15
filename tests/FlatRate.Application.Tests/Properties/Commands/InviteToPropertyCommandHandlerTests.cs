@@ -174,6 +174,35 @@ public class InviteToPropertyCommandHandlerTests
         result.ErrorMessage.Should().Be("User already has access to this property.");
     }
 
+    [Fact]
+    public async Task Handle_WhenUserNotFound_ReturnsError()
+    {
+        // Arrange
+        var currentUserId = Guid.NewGuid();
+        var propertyId = Guid.NewGuid();
+        var property = Property.Create("Test Property", "123 Test St");
+
+        _currentUserService.UserId.Returns(currentUserId);
+        _propertyRepository.GetByIdAsync(propertyId, Arg.Any<CancellationToken>())
+            .Returns(property);
+        _propertyRepository.GetUserRoleAsync(propertyId, currentUserId, Arg.Any<CancellationToken>())
+            .Returns(PropertyRole.Owner);
+        _userRepository.GetByEmailAsync("newuser@example.com", Arg.Any<CancellationToken>())
+            .Returns((User?)null);
+
+        var command = new InviteToPropertyCommand(propertyId, "newuser@example.com");
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Be("No account found for this email. The person must sign up before they can be added.");
+        await _propertyAccessRepository.DidNotReceive().AddAsync(
+            Arg.Any<PropertyAccess>(),
+            Arg.Any<CancellationToken>());
+    }
+
     #endregion
 
     #region Success Paths
@@ -208,35 +237,6 @@ public class InviteToPropertyCommandHandlerTests
             Arg.Is<PropertyAccess>(a => a.UserId == existingUser.Id && a.IsActive),
             Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task Handle_WhenUserNotFound_ReturnsError()
-    {
-        // Arrange
-        var currentUserId = Guid.NewGuid();
-        var propertyId = Guid.NewGuid();
-        var property = Property.Create("Test Property", "123 Test St");
-
-        _currentUserService.UserId.Returns(currentUserId);
-        _propertyRepository.GetByIdAsync(propertyId, Arg.Any<CancellationToken>())
-            .Returns(property);
-        _propertyRepository.GetUserRoleAsync(propertyId, currentUserId, Arg.Any<CancellationToken>())
-            .Returns(PropertyRole.Owner);
-        _userRepository.GetByEmailAsync("newuser@example.com", Arg.Any<CancellationToken>())
-            .Returns((User?)null);
-
-        var command = new InviteToPropertyCommand(propertyId, "newuser@example.com");
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Success.Should().BeFalse();
-        result.ErrorMessage.Should().Be("No account found for this email. The person must sign up before they can be added.");
-        await _propertyAccessRepository.DidNotReceive().AddAsync(
-            Arg.Any<PropertyAccess>(),
-            Arg.Any<CancellationToken>());
     }
 
     [Fact]
