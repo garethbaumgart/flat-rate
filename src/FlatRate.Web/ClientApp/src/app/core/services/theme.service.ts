@@ -6,24 +6,25 @@ import { isPlatformBrowser } from '@angular/common';
 })
 export class ThemeService {
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly _isDark = signal<boolean>(false);
 
-  readonly isDark = signal<boolean>(false);
+  readonly isDark = this._isDark.asReadonly();
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
       // Set initial value from system preference
-      this.isDark.set(mediaQuery.matches);
+      this._isDark.set(mediaQuery.matches);
 
       // Listen for system theme changes
       mediaQuery.addEventListener('change', (e) => {
-        this.isDark.set(e.matches);
+        this._isDark.set(e.matches);
       });
 
       // Apply theme whenever isDark changes
       effect(() => {
-        this.applyTheme(this.isDark());
+        this.applyTheme(this._isDark());
       });
     }
   }
