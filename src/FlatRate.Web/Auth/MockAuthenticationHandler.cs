@@ -26,16 +26,24 @@ public class MockAuthenticationHandler(
         }
 
         var raw = headerValue.ToString();
-        if (string.IsNullOrEmpty(raw))
+        if (string.IsNullOrWhiteSpace(raw))
         {
             return Task.FromResult(AuthenticateResult.NoResult());
         }
 
         // Parse pipe-delimited format: "userId|Name|email" or just "userId"
         var parts = raw.Split('|');
-        var userId = parts[0];
-        var name = parts.Length > 1 ? parts[1] : $"Mock User ({userId})";
-        var email = parts.Length > 2 ? parts[2] : $"{userId}@mock.local";
+        var userId = parts[0].Trim();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Task.FromResult(AuthenticateResult.NoResult());
+        }
+
+        var namePart = parts.Length > 1 ? parts[1].Trim() : "";
+        var name = string.IsNullOrWhiteSpace(namePart) ? $"Mock User ({userId})" : namePart;
+
+        var emailPart = parts.Length > 2 ? parts[2].Trim() : "";
+        var email = string.IsNullOrWhiteSpace(emailPart) ? $"{userId}@mock.local" : emailPart;
 
         var claims = new[]
         {
