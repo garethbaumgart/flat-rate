@@ -71,8 +71,8 @@ public sealed class Bill : AggregateRoot
         {
             InvoiceNumber = invoiceNumber.Trim(),
             PropertyId = propertyId,
-            PeriodStart = periodStart,
-            PeriodEnd = periodEnd,
+            PeriodStart = periodStart.ToUniversalTime(),
+            PeriodEnd = periodEnd.ToUniversalTime(),
             ElectricityReading = electricityReading,
             WaterReading = waterReading,
             SanitationReading = sanitationReading,

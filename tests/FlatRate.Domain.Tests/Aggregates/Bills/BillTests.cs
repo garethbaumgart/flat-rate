@@ -479,7 +479,7 @@ public class BillTests
     }
 
     [Fact]
-    public void Create_WithPositiveOffsetDates_ShouldPreserveValues()
+    public void Create_WithPositiveOffsetDates_ShouldNormalizeToUtc()
     {
         // Arrange - South Africa is UTC+2
         var saOffset = TimeSpan.FromHours(2);
@@ -499,9 +499,12 @@ public class BillTests
             CreateWaterTariff(),
             CreateSanitationTariff());
 
-        // Assert
-        bill.PeriodStart.Should().Be(start);
-        bill.PeriodEnd.Should().Be(end);
+        // Assert - Values should be converted to UTC (offset = 0)
+        bill.PeriodStart.Offset.Should().Be(TimeSpan.Zero, "PeriodStart should be normalized to UTC");
+        bill.PeriodEnd.Offset.Should().Be(TimeSpan.Zero, "PeriodEnd should be normalized to UTC");
+        // UTC+2 midnight = UTC 22:00 previous day
+        bill.PeriodStart.Should().Be(new DateTimeOffset(2024, 3, 31, 22, 0, 0, TimeSpan.Zero));
+        bill.PeriodEnd.Should().Be(new DateTimeOffset(2024, 4, 29, 22, 0, 0, TimeSpan.Zero));
     }
 
     #endregion
