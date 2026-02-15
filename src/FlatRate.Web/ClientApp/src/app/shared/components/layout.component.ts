@@ -1,13 +1,11 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, ButtonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
     <div class="min-h-screen flex flex-col" style="background-color: var(--color-bg-primary);">
       <!-- Navigation Header -->
@@ -71,7 +69,7 @@ import { AuthService } from '../../core/services/auth.service';
               }
             </nav>
 
-            <!-- User Menu, Theme Toggle & Mobile Menu -->
+            <!-- User Menu & Mobile Menu -->
             <div class="flex items-center gap-2">
               <!-- Auth Section -->
               @if (authService.loading()) {
@@ -114,19 +112,6 @@ import { AuthService } from '../../core/services/auth.service';
               >
                 <i class="pi pi-question-circle text-lg"></i>
               </a>
-
-              <button
-                (click)="themeService.toggleTheme()"
-                class="p-2 rounded-lg transition-colors"
-                style="color: var(--color-text-secondary);"
-                [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
-              >
-                @if (themeService.isDark()) {
-                  <i class="pi pi-sun text-lg"></i>
-                } @else {
-                  <i class="pi pi-moon text-lg"></i>
-                }
-              </button>
 
               <!-- Mobile menu button -->
               <button
@@ -348,7 +333,6 @@ import { AuthService } from '../../core/services/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LayoutComponent {
-  readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
   readonly mobileMenuOpen = signal(false);
 
