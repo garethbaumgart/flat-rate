@@ -230,10 +230,11 @@ public sealed class InvoicePdfService
     {
         var bgColor = isDark ? Nord0 : Nord6;
         var valueColor = isDark ? Nord13 : Nord0;
+        var labelColor = isDark ? Nord4 : Nord3;
 
         container.Background(bgColor).Padding(12).Column(col =>
         {
-            col.Item().AlignCenter().Text(label).FontSize(7).FontColor(Nord3).LetterSpacing(0.08f);
+            col.Item().AlignCenter().Text(label).FontSize(7).FontColor(labelColor).LetterSpacing(0.08f);
             col.Item().PaddingTop(4).AlignCenter().Text(value).FontSize(13).Bold().FontColor(valueColor);
         });
     }
@@ -250,23 +251,21 @@ public sealed class InvoicePdfService
 
     private static void HeaderCell(IContainer container, string text, bool alignRight)
     {
-        var cell = container.Background(Nord6).Padding(8);
+        IContainer cell = container.Background(Nord6).Padding(8);
         if (alignRight)
-            cell.AlignRight().Text(text).FontSize(8).Bold().FontColor(Nord2);
-        else
-            cell.Text(text).FontSize(8).Bold().FontColor(Nord2);
+            cell = cell.AlignRight();
+        cell.Text(text).FontSize(8).Bold().FontColor(Nord2);
     }
 
     private static void BodyCell(TableDescriptor table, string text, bool alignRight, bool lastRow)
     {
-        var cell = lastRow
+        IContainer cell = lastRow
             ? table.Cell().Padding(8)
             : table.Cell().BorderBottom(1).BorderColor(Nord5).Padding(8);
 
         if (alignRight)
-            cell.AlignRight().Text(text).FontSize(9).FontColor(Nord0);
-        else
-            cell.Text(text).FontSize(9).FontColor(Nord0);
+            cell = cell.AlignRight();
+        cell.Text(text).FontSize(9).FontColor(Nord0);
     }
 
     private static void BodyCellBold(TableDescriptor table, string text, bool lastRow)
