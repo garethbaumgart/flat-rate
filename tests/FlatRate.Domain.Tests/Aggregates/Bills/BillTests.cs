@@ -507,5 +507,72 @@ public class BillTests
         bill.PeriodEnd.Should().Be(new DateTimeOffset(2024, 4, 29, 22, 0, 0, TimeSpan.Zero));
     }
 
+    [Fact]
+    public void Create_WithUtcMidnightDates_PreservesCalendarDate()
+    {
+        // Arrange - When the frontend sends "2025-01-01" as a date-only string,
+        // the API parses it as UTC midnight. This test verifies the calendar date
+        // is preserved through Bill.Create (i.e., Jan 1 stays Jan 1).
+        var start = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var end = new DateTimeOffset(2025, 1, 31, 0, 0, 0, TimeSpan.Zero);
+
+        // Act
+        var bill = Bill.Create(
+            "UTIL-0001",
+            _propertyId,
+            start,
+            end,
+            CreateElectricityReading(),
+            CreateWaterReading(),
+            CreateSanitationReading(),
+            CreateElectricityTariff(),
+            CreateWaterTariff(),
+            CreateSanitationTariff());
+
+        // Assert - Calendar dates should be preserved as-is
+        bill.PeriodStart.Year.Should().Be(2025);
+        bill.PeriodStart.Month.Should().Be(1);
+        bill.PeriodStart.Day.Should().Be(1);
+        bill.PeriodEnd.Year.Should().Be(2025);
+        bill.PeriodEnd.Month.Should().Be(1);
+        bill.PeriodEnd.Day.Should().Be(31);
+    }
+
+    [Fact]
+    public void Create_WithDifferentOffsets_ShouldAllNormalizeToSameUtcInstant()
+    {
+        // Arrange - Same instant expressed in different timezones
+        var utcStart = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var saStart = new DateTimeOffset(2025, 1, 1, 2, 0, 0, TimeSpan.FromHours(2));
+
+        // Act
+        var billUtc = Bill.Create(
+            "UTIL-UTC",
+            _propertyId,
+            utcStart,
+            utcStart,
+            CreateElectricityReading(),
+            CreateWaterReading(),
+            CreateSanitationReading(),
+            CreateElectricityTariff(),
+            CreateWaterTariff(),
+            CreateSanitationTariff());
+
+        var billSa = Bill.Create(
+            "UTIL-SA",
+            _propertyId,
+            saStart,
+            saStart,
+            CreateElectricityReading(),
+            CreateWaterReading(),
+            CreateSanitationReading(),
+            CreateElectricityTariff(),
+            CreateWaterTariff(),
+            CreateSanitationTariff());
+
+        // Assert - Both should resolve to the same UTC instant
+        billUtc.PeriodStart.UtcDateTime.Should().Be(billSa.PeriodStart.UtcDateTime);
+    }
+
     #endregion
 }

@@ -362,12 +362,12 @@ export class BillsPage implements OnInit {
     }
 
     if (startDate) {
-      const startDateStr = startDate.toISOString().split('T')[0];
+      const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
       bills = bills.filter(b => b.periodStart >= startDateStr);
     }
 
     if (endDate) {
-      const endDateStr = endDate.toISOString().split('T')[0];
+      const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
       bills = bills.filter(b => b.periodEnd <= endDateStr);
     }
 
