@@ -30,6 +30,12 @@ builder.Services.AddScoped<InvoicePdfService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+// Serialize enums as strings in API responses (e.g. PropertyRole)
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
+
 // Authentication setup
 var isDevelopment = builder.Environment.IsDevelopment();
 
