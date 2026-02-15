@@ -82,16 +82,7 @@ public sealed class InviteToPropertyCommandHandler : IRequestHandler<InviteToPro
         }
         else
         {
-            // Check if there's already a pending invite for this email
-            var pendingInvites = await _propertyAccessRepository.GetPendingByEmailAsync(email, cancellationToken);
-            if (pendingInvites.Any(p => p.PropertyId == request.PropertyId))
-            {
-                return new InviteToPropertyResult(false, "An invite has already been sent to this email.");
-            }
-
-            // Create pending invite
-            var access = PropertyAccess.CreatePendingInvite(request.PropertyId, email, request.Role);
-            await _propertyAccessRepository.AddAsync(access, cancellationToken);
+            return new InviteToPropertyResult(false, "No account found for this email. The person must sign up before they can be added.");
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
