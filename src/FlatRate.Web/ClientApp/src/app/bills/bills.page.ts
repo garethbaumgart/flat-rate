@@ -196,7 +196,9 @@ import { Bill } from '../core/models/bill.model';
       header="Bill Details"
       [(visible)]="showDetailDialog"
       [modal]="true"
+      [maximizable]="true"
       [style]="{ width: '90vw', maxWidth: '700px' }"
+      [contentStyle]="{ 'max-height': '70vh', 'overflow-y': 'auto' }"
     >
       @if (selectedBill()) {
         <div class="flex flex-col gap-4">
