@@ -25,17 +25,23 @@ public class MockAuthenticationHandler(
             return Task.FromResult(AuthenticateResult.NoResult());
         }
 
-        var userId = headerValue.ToString();
-        if (string.IsNullOrEmpty(userId))
+        var raw = headerValue.ToString();
+        if (string.IsNullOrEmpty(raw))
         {
             return Task.FromResult(AuthenticateResult.NoResult());
         }
 
+        // Parse pipe-delimited format: "userId|Name|email" or just "userId"
+        var parts = raw.Split('|');
+        var userId = parts[0];
+        var name = parts.Length > 1 ? parts[1] : $"Mock User ({userId})";
+        var email = parts.Length > 2 ? parts[2] : $"{userId}@mock.local";
+
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId),
-            new Claim(ClaimTypes.Name, $"Mock User ({userId})"),
-            new Claim(ClaimTypes.Email, $"{userId}@mock.local")
+            new Claim(ClaimTypes.Name, name),
+            new Claim(ClaimTypes.Email, email)
         };
 
         var identity = new ClaimsIdentity(claims, Scheme.Name);
