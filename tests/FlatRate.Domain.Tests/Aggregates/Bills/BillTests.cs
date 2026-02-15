@@ -539,7 +539,7 @@ public class BillTests
     }
 
     [Fact]
-    public void Create_WithDifferentOffsets_ShouldAllNormalizeToSameUtcInstant()
+    public void Create_WithSameInstantDifferentOffsets_ShouldNormalizeToIdenticalUtc()
     {
         // Arrange - Same instant expressed in different timezones
         var utcStart = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
