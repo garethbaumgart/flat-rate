@@ -20,7 +20,7 @@ import { AuthService } from '../core/services/auth.service';
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="text-center">
             <!-- Logo Icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" class="w-20 h-20 mb-8 inline-block" style="filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" class="w-20 h-20 mb-8 inline-block" style="filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));" role="img" aria-label="FlatRate logo">
               <defs>
                 <clipPath id="heroLogo"><rect width="80" height="80" rx="18"/></clipPath>
                 <filter id="heroGlow"><feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#2e3440" flood-opacity="0.2"/></filter>
