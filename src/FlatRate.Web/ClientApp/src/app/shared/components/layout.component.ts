@@ -106,6 +106,15 @@ import { AuthService } from '../../core/services/auth.service';
                 </button>
               }
 
+              <a
+                routerLink="/help"
+                class="p-2 rounded-lg transition-colors"
+                style="color: var(--color-text-secondary);"
+                aria-label="Help"
+              >
+                <i class="pi pi-question-circle text-lg"></i>
+              </a>
+
               <button
                 (click)="themeService.toggleTheme()"
                 class="p-2 rounded-lg transition-colors"
@@ -158,6 +167,15 @@ import { AuthService } from '../../core/services/auth.service';
               >
                 <i class="pi pi-home mr-3"></i>
                 Home
+              </a>
+              <a
+                routerLink="/help"
+                routerLinkActive="active-nav-link-mobile"
+                class="mobile-nav-link"
+                (click)="mobileMenuOpen.set(false)"
+              >
+                <i class="pi pi-question-circle mr-3"></i>
+                Help
               </a>
 
               @if (authService.isAuthenticated()) {

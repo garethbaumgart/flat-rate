@@ -9,6 +9,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { PropertyService } from '../core/services/property.service';
 import { PropertySharingService } from '../core/services/property-sharing.service';
@@ -27,7 +28,8 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
     InputNumberModule,
     ToastModule,
     ConfirmDialogModule,
-    TagModule
+    TagModule,
+    Tooltip
   ],
   providers: [MessageService, ConfirmationService],
   template: `
@@ -246,6 +248,9 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
         <div class="mb-6 p-4 rounded-lg" style="background: var(--color-bg-tertiary);">
           <p style="color: var(--color-text-secondary);">
             Setting default rates for <strong style="color: var(--color-text-primary);">{{ selectedProperty()?.name }}</strong>
+            <i class="pi pi-info-circle text-sm ml-2" style="color: var(--color-text-muted);"
+              pTooltip="Default rates are pre-filled when creating bills for this property. You can override them per bill."
+              tooltipPosition="top"></i>
           </p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -431,10 +436,15 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
                     [style.background]="collaborator.role === 'Owner' ? 'var(--color-accent-bg)' : 'var(--color-bg-tertiary)'"
                     [style.color]="collaborator.role === 'Owner' ? 'var(--color-accent)' : 'var(--color-text-muted)'">
                     {{ collaborator.role }}
+                    <i class="pi pi-info-circle"
+                      [pTooltip]="collaborator.role === 'Owner'
+                        ? 'Full access \u2014 can edit, set rates, create bills, manage sharing, and delete the property.'
+                        : 'Can view, edit, set rates, and create bills. Cannot delete the property or manage sharing.'"
+                      tooltipPosition="top"></i>
                   </span>
                   @if (collaborator.role !== 'Owner' && collaborator.userId) {
                     <p-button

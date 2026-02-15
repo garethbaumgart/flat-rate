@@ -9,6 +9,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { DatePicker } from 'primeng/datepicker';
 import { ToastModule } from 'primeng/toast';
 import { DividerModule } from 'primeng/divider';
+import { Tooltip } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { PropertyService } from '../core/services/property.service';
 import { BillService } from '../core/services/bill.service';
@@ -27,7 +28,8 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
     InputNumberModule,
     DatePicker,
     ToastModule,
-    DividerModule
+    DividerModule,
+    Tooltip
   ],
   providers: [MessageService],
   template: `
@@ -93,7 +95,15 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
         </p-card>
 
         <!-- Meter Readings -->
-        <p-card header="Meter Readings">
+        <p-card>
+          <ng-template pTemplate="title">
+            <div class="flex items-center gap-2">
+              <span>Meter Readings</span>
+              <i class="pi pi-info-circle text-sm" style="color: var(--color-text-muted);"
+                pTooltip="Enter the opening and closing readings from the utility meter. Units consumed are calculated automatically."
+                tooltipPosition="top"></i>
+            </div>
+          </ng-template>
           <div class="flex flex-col gap-6">
             <!-- Electricity -->
             <div>
@@ -213,7 +223,15 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
         </p-card>
 
         <!-- Tariff Rates -->
-        <p-card header="Tariff Rates">
+        <p-card>
+          <ng-template pTemplate="title">
+            <div class="flex items-center gap-2">
+              <span>Tariff Rates</span>
+              <i class="pi pi-info-circle text-sm" style="color: var(--color-text-muted);"
+                pTooltip="Rates are pre-filled from your property defaults. You can adjust them for this specific bill."
+                tooltipPosition="top"></i>
+            </div>
+          </ng-template>
           <p class="text-sm mb-4" style="color: var(--color-text-secondary);">
             @if (selectedProperty()?.defaultElectricityRate !== null) {
               Rates pre-filled from property defaults. You can adjust them for this bill.
@@ -240,7 +258,12 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
 
             <!-- Water Rates -->
             <div class="flex flex-col gap-2">
-              <label for="waterTier1" class="font-medium">Water Tier 1 (0-6 kL)</label>
+              <label for="waterTier1" class="font-medium">
+                Water Tier 1 (0-6 kL)
+                <i class="pi pi-info-circle text-xs ml-1" style="color: var(--color-text-muted);"
+                  pTooltip="Tier 1: first 6 kL at the base rate."
+                  tooltipPosition="top"></i>
+              </label>
               <p-inputNumber
                 id="waterTier1"
                 [(ngModel)]="waterRateTier1"
@@ -254,7 +277,12 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
               />
             </div>
             <div class="flex flex-col gap-2">
-              <label for="waterTier2" class="font-medium">Water Tier 2 (7-15 kL)</label>
+              <label for="waterTier2" class="font-medium">
+                Water Tier 2 (7-15 kL)
+                <i class="pi pi-info-circle text-xs ml-1" style="color: var(--color-text-muted);"
+                  pTooltip="Tier 2: next 9 kL (7-15) at a higher rate."
+                  tooltipPosition="top"></i>
+              </label>
               <p-inputNumber
                 id="waterTier2"
                 [(ngModel)]="waterRateTier2"
@@ -268,7 +296,12 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
               />
             </div>
             <div class="flex flex-col gap-2">
-              <label for="waterTier3" class="font-medium">Water Tier 3 (16+ kL)</label>
+              <label for="waterTier3" class="font-medium">
+                Water Tier 3 (16+ kL)
+                <i class="pi pi-info-circle text-xs ml-1" style="color: var(--color-text-muted);"
+                  pTooltip="Tier 3: anything above 15 kL at the highest rate."
+                  tooltipPosition="top"></i>
+              </label>
               <p-inputNumber
                 id="waterTier3"
                 [(ngModel)]="waterRateTier3"
@@ -352,7 +385,12 @@ import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
                 <span class="font-medium" style="color: var(--color-text-primary);">R {{ preview().subtotal | number:'1.2-2' }}</span>
               </div>
               <div class="flex justify-between py-2">
-                <span style="color: var(--color-text-secondary);">VAT (15%):</span>
+                <span style="color: var(--color-text-secondary);">
+                  VAT (15%):
+                  <i class="pi pi-info-circle text-xs ml-1" style="color: var(--color-text-muted);"
+                    pTooltip="VAT is calculated at 15% on the subtotal (South African standard rate)."
+                    tooltipPosition="top"></i>
+                </span>
                 <span class="font-medium" style="color: var(--color-text-primary);">R {{ preview().vatAmount | number:'1.2-2' }}</span>
               </div>
               <p-divider />
