@@ -16,9 +16,18 @@ import { AuthService } from '../../core/services/auth.service';
           <div class="flex justify-between items-center h-16">
             <!-- Logo -->
             <a routerLink="/" class="flex items-center gap-3 no-underline">
-              <div class="w-10 h-10 rounded-lg flex items-center justify-center gradient-accent">
-                <i class="pi pi-bolt text-white text-lg"></i>
-              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" class="w-10 h-10">
+                <defs>
+                  <clipPath id="navLogo"><rect width="80" height="80" rx="18"/></clipPath>
+                  <filter id="navGlow"><feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#2e3440" flood-opacity="0.2"/></filter>
+                </defs>
+                <g clip-path="url(#navLogo)">
+                  <rect width="80" height="80" fill="#2e3440"/>
+                  <path d="M12,40 L22,40 L26,32 L30,48 L34,32 L38,48 L42,40 L52,40" fill="none" stroke="#ebcb8b" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".15"/>
+                  <path d="M12,40 L22,40 L26,32 L30,48 L34,32 L38,48 L42,40 L52,40" fill="none" stroke="#ebcb8b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#navGlow)"/>
+                  <polygon points="52,30 68,40 52,50" fill="#ebcb8b"/>
+                </g>
+              </svg>
               <span class="text-xl font-bold" style="color: var(--color-text-primary);">FlatRate</span>
             </a>
 
