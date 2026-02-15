@@ -8,10 +8,21 @@ using QuestPDF.Infrastructure;
 namespace FlatRate.Web.Services;
 
 /// <summary>
-/// Service for generating PDF invoices from bills.
+/// Service for generating Nord-themed PDF invoices from bills.
+/// Uses the "Split Header + Grid Statement" (Variant D) layout.
 /// </summary>
 public sealed class InvoicePdfService
 {
+    // Nord palette
+    private static readonly Color Nord0 = Color.FromHex("#2e3440");
+    private static readonly Color Nord1 = Color.FromHex("#3b4252");
+    private static readonly Color Nord2 = Color.FromHex("#434c5e");
+    private static readonly Color Nord3 = Color.FromHex("#4c566a");
+    private static readonly Color Nord4 = Color.FromHex("#d8dee9");
+    private static readonly Color Nord5 = Color.FromHex("#e5e9f0");
+    private static readonly Color Nord6 = Color.FromHex("#eceff4");
+    private static readonly Color Nord13 = Color.FromHex("#ebcb8b");
+
     private readonly IMediator _mediator;
 
     static InvoicePdfService()
@@ -36,11 +47,11 @@ public sealed class InvoicePdfService
             container.Page(page =>
             {
                 page.Size(PageSizes.A4);
-                page.Margin(40);
+                page.Margin(0);
                 page.DefaultTextStyle(x => x.FontSize(10));
 
-                page.Header().Element(c => ComposeHeader(c, bill, propertyName, propertyAddress));
-                page.Content().Element(c => ComposeContent(c, bill));
+                page.Header().Element(c => ComposeHeader(c, bill));
+                page.Content().Element(c => ComposeContent(c, bill, propertyName, propertyAddress));
                 page.Footer().Element(ComposeFooter);
             });
         });
@@ -48,168 +59,222 @@ public sealed class InvoicePdfService
         return document.GeneratePdf();
     }
 
-    private void ComposeHeader(IContainer container, BillDto bill, string propertyName, string propertyAddress)
+    private void ComposeHeader(IContainer container, BillDto bill)
     {
-        container.Column(column =>
+        container.Background(Nord0).Padding(20).PaddingHorizontal(40).Row(row =>
         {
-            column.Spacing(10);
-
-            column.Item().Row(row =>
+            // Left side: logo mark + brand text
+            row.RelativeItem().Row(innerRow =>
             {
-                row.RelativeItem().Column(col =>
-                {
-                    col.Item().Text("INVOICE").FontSize(24).Bold().FontColor(Colors.Blue.Darken3);
-                    col.Item().Text($"Invoice #: {bill.InvoiceNumber}").FontSize(12).Bold();
-                });
+                // Aurora Yellow logo square
+                innerRow.ConstantItem(34).Height(34).Background(Nord13).AlignCenter().AlignMiddle()
+                    .Text("\u26a1").FontSize(16);
 
-                row.RelativeItem().AlignRight().Column(col =>
+                innerRow.ConstantItem(12); // spacer
+
+                innerRow.RelativeItem().Column(col =>
                 {
-                    col.Item().Text("FlatRate").FontSize(16).Bold().FontColor(Colors.Blue.Darken3);
-                    col.Item().Text("Utility Billing Services").FontSize(10).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text("FlatRate").FontSize(16).Bold().FontColor(Nord6);
+                    col.Item().Text("UTILITY BILLING SERVICES").FontSize(6.5f).FontColor(Nord3).LetterSpacing(0.1f);
                 });
             });
 
-            column.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
-
-            column.Item().Row(row =>
+            // Right side: INVOICE tag + invoice number/date
+            row.ConstantItem(180).AlignRight().Column(col =>
             {
-                row.RelativeItem().Column(col =>
-                {
-                    col.Item().Text("BILLED TO:").FontSize(9).FontColor(Colors.Grey.Darken1);
-                    col.Item().Text(propertyName).FontSize(12).Bold();
-                    col.Item().Text(propertyAddress).FontSize(10);
-                });
+                col.Item().AlignRight().Container()
+                    .Background(Nord1).PaddingVertical(4).PaddingHorizontal(12)
+                    .Text("INVOICE").FontSize(8).Bold().FontColor(Nord13).LetterSpacing(0.12f);
 
-                row.RelativeItem().AlignRight().Column(col =>
-                {
-                    col.Item().Text($"Billing Period").FontSize(9).FontColor(Colors.Grey.Darken1);
-                    col.Item().Text($"{bill.PeriodStart:yyyy-MM-dd} to {bill.PeriodEnd:yyyy-MM-dd}").FontSize(10).Bold();
-                    col.Item().PaddingTop(10).Text($"Date Issued").FontSize(9).FontColor(Colors.Grey.Darken1);
-                    col.Item().Text($"{bill.CreatedAt:yyyy-MM-dd}").FontSize(10);
-                });
+                col.Item().PaddingTop(4).AlignRight()
+                    .Text($"#{bill.InvoiceNumber}  \u2022  {bill.CreatedAt:yyyy-MM-dd}")
+                    .FontSize(8).FontColor(Nord3);
             });
-
-            column.Item().PaddingTop(10);
         });
     }
 
-    private void ComposeContent(IContainer container, BillDto bill)
+    private void ComposeContent(IContainer container, BillDto bill, string propertyName, string propertyAddress)
     {
-        container.Column(column =>
+        container.PaddingHorizontal(40).PaddingTop(20).Column(column =>
         {
-            column.Spacing(15);
+            column.Spacing(16);
 
-            // Meter Readings Section
+            // Info grid
+            column.Item().Element(c => ComposeInfoGrid(c, bill, propertyName, propertyAddress));
+
+            // Meter Readings section
+            column.Item().Element(c => ComposeSectionTitle(c, "Meter Readings"));
             column.Item().Element(c => ComposeMeterReadings(c, bill));
 
-            // Cost Breakdown Section
+            // Cost Breakdown section
+            column.Item().Element(c => ComposeSectionTitle(c, "Cost Breakdown"));
             column.Item().Element(c => ComposeCostBreakdown(c, bill));
+
+            // Summary cards
+            column.Item().Element(c => ComposeSummaryCards(c, bill));
         });
+    }
+
+    private static void ComposeInfoGrid(IContainer container, BillDto bill, string propertyName, string propertyAddress)
+    {
+        container.Border(1).BorderColor(Nord5).Padding(14).Row(row =>
+        {
+            InfoGridCell(row, "BILLED TO", propertyName);
+            InfoGridCell(row, "LOCATION", propertyAddress);
+            InfoGridCell(row, "PERIOD", $"{bill.PeriodStart:MMM d} \u2014 {bill.PeriodEnd:MMM d, yyyy}");
+            InfoGridCell(row, "ISSUED", $"{bill.CreatedAt:MMMM d, yyyy}");
+        });
+    }
+
+    private static void InfoGridCell(RowDescriptor row, string label, string value)
+    {
+        row.RelativeItem().Column(col =>
+        {
+            col.Item().Text(label).FontSize(7).FontColor(Nord3).LetterSpacing(0.08f);
+            col.Item().PaddingTop(3).Text(value).FontSize(9).Bold().FontColor(Nord0);
+        });
+    }
+
+    private static void ComposeSectionTitle(IContainer container, string title)
+    {
+        container.Text(title).FontSize(8).Bold().FontColor(Nord3).LetterSpacing(0.1f);
     }
 
     private void ComposeMeterReadings(IContainer container, BillDto bill)
     {
-        container.Column(column =>
+        container.Table(table =>
         {
-            column.Item().Text("METER READINGS").FontSize(12).Bold().FontColor(Colors.Blue.Darken3);
-            column.Item().PaddingTop(5);
-
-            column.Item().Table(table =>
+            table.ColumnsDefinition(columns =>
             {
-                table.ColumnsDefinition(columns =>
-                {
-                    columns.RelativeColumn(3);
-                    columns.RelativeColumn(2);
-                    columns.RelativeColumn(2);
-                    columns.RelativeColumn(2);
-                });
-
-                // Header
-                table.Header(header =>
-                {
-                    header.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text("Utility").Bold();
-                    header.Cell().Background(Colors.Grey.Lighten3).Padding(8).AlignRight().Text("Opening").Bold();
-                    header.Cell().Background(Colors.Grey.Lighten3).Padding(8).AlignRight().Text("Closing").Bold();
-                    header.Cell().Background(Colors.Grey.Lighten3).Padding(8).AlignRight().Text("Units Used").Bold();
-                });
-
-                // Electricity
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).Text("Electricity (kWh)");
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).AlignRight().Text($"{bill.ElectricityReading.Opening:N2}");
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).AlignRight().Text($"{bill.ElectricityReading.Closing:N2}");
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).AlignRight().Text($"{bill.ElectricityReading.UnitsUsed:N2}").Bold();
-
-                // Water
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).Text("Water (kL)");
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).AlignRight().Text($"{bill.WaterReading.Opening:N2}");
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).AlignRight().Text($"{bill.WaterReading.Closing:N2}");
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).AlignRight().Text($"{bill.WaterReading.UnitsUsed:N2}").Bold();
-
-                // Sanitation
-                table.Cell().Padding(8).Text("Sanitation (kL)");
-                table.Cell().Padding(8).AlignRight().Text($"{bill.SanitationReading.Opening:N2}");
-                table.Cell().Padding(8).AlignRight().Text($"{bill.SanitationReading.Closing:N2}");
-                table.Cell().Padding(8).AlignRight().Text($"{bill.SanitationReading.UnitsUsed:N2}").Bold();
+                columns.RelativeColumn(3);
+                columns.RelativeColumn(2);
+                columns.RelativeColumn(2);
+                columns.RelativeColumn(2);
             });
+
+            // Header
+            table.Header(header =>
+            {
+                HeaderCell(header.Cell(), "Utility", false);
+                HeaderCell(header.Cell(), "Opening", true);
+                HeaderCell(header.Cell(), "Closing", true);
+                HeaderCell(header.Cell(), "Units", true);
+            });
+
+            // Electricity
+            BodyCell(table, "Electricity (kWh)", false, false);
+            BodyCell(table, $"{bill.ElectricityReading.Opening:N2}", true, false);
+            BodyCell(table, $"{bill.ElectricityReading.Closing:N2}", true, false);
+            BodyCellBold(table, $"{bill.ElectricityReading.UnitsUsed:N2}", false);
+
+            // Water
+            BodyCell(table, "Water (kL)", false, false);
+            BodyCell(table, $"{bill.WaterReading.Opening:N2}", true, false);
+            BodyCell(table, $"{bill.WaterReading.Closing:N2}", true, false);
+            BodyCellBold(table, $"{bill.WaterReading.UnitsUsed:N2}", false);
+
+            // Sanitation (last row)
+            BodyCell(table, "Sanitation (kL)", false, true);
+            BodyCell(table, $"{bill.SanitationReading.Opening:N2}", true, true);
+            BodyCell(table, $"{bill.SanitationReading.Closing:N2}", true, true);
+            BodyCellBold(table, $"{bill.SanitationReading.UnitsUsed:N2}", true);
         });
     }
 
     private void ComposeCostBreakdown(IContainer container, BillDto bill)
     {
-        container.Column(column =>
+        container.Table(table =>
         {
-            column.Item().Text("COST BREAKDOWN").FontSize(12).Bold().FontColor(Colors.Blue.Darken3);
-            column.Item().PaddingTop(5);
-
-            column.Item().Table(table =>
+            table.ColumnsDefinition(columns =>
             {
-                table.ColumnsDefinition(columns =>
-                {
-                    columns.RelativeColumn(4);
-                    columns.RelativeColumn(2);
-                });
-
-                // Header
-                table.Header(header =>
-                {
-                    header.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text("Description").Bold();
-                    header.Cell().Background(Colors.Grey.Lighten3).Padding(8).AlignRight().Text("Amount (R)").Bold();
-                });
-
-                // Line items
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).Text("Electricity");
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).AlignRight().Text($"{bill.ElectricityCost:N2}");
-
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).Text("Water");
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).AlignRight().Text($"{bill.WaterCost:N2}");
-
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).Text("Sanitation");
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).AlignRight().Text($"{bill.SanitationCost:N2}");
-
-                // Subtotal
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).Text("Subtotal").Bold();
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).AlignRight().Text($"{bill.Subtotal:N2}").Bold();
-
-                // VAT
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).Text("VAT (15%)");
-                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(8).AlignRight().Text($"{bill.VatAmount:N2}");
-
-                // Total
-                table.Cell().Background(Colors.Blue.Lighten5).Padding(8).Text("TOTAL").FontSize(12).Bold();
-                table.Cell().Background(Colors.Blue.Lighten5).Padding(8).AlignRight().Text($"R {bill.Total:N2}").FontSize(12).Bold().FontColor(Colors.Blue.Darken3);
+                columns.RelativeColumn(4);
+                columns.RelativeColumn(2);
             });
+
+            // Header
+            table.Header(header =>
+            {
+                HeaderCell(header.Cell(), "Description", false);
+                HeaderCell(header.Cell(), "Amount (R)", true);
+            });
+
+            // Electricity
+            BodyCell(table, "Electricity", false, false);
+            BodyCell(table, $"{bill.ElectricityCost:N2}", true, false);
+
+            // Water
+            BodyCell(table, "Water", false, false);
+            BodyCell(table, $"{bill.WaterCost:N2}", true, false);
+
+            // Sanitation (last row)
+            BodyCell(table, "Sanitation", false, true);
+            BodyCell(table, $"{bill.SanitationCost:N2}", true, true);
+        });
+    }
+
+    private static void ComposeSummaryCards(IContainer container, BillDto bill)
+    {
+        container.Row(row =>
+        {
+            SummaryCard(row.RelativeItem(), "SUBTOTAL", $"R {bill.Subtotal:N2}", false);
+            row.ConstantItem(10);
+            SummaryCard(row.RelativeItem(), "VAT (15%)", $"R {bill.VatAmount:N2}", false);
+            row.ConstantItem(10);
+            SummaryCard(row.RelativeItem(), "ITEMS", "3", false);
+            row.ConstantItem(10);
+            SummaryCard(row.RelativeItem(), "TOTAL DUE", $"R {bill.Total:N2}", true);
+        });
+    }
+
+    private static void SummaryCard(IContainer container, string label, string value, bool isDark)
+    {
+        var bgColor = isDark ? Nord0 : Nord6;
+        var valueColor = isDark ? Nord13 : Nord0;
+
+        container.Background(bgColor).Padding(12).Column(col =>
+        {
+            col.Item().AlignCenter().Text(label).FontSize(7).FontColor(Nord3).LetterSpacing(0.08f);
+            col.Item().PaddingTop(4).AlignCenter().Text(value).FontSize(13).Bold().FontColor(valueColor);
         });
     }
 
     private void ComposeFooter(IContainer container)
     {
-        container.Column(column =>
+        container.PaddingHorizontal(40).AlignCenter().Text(text =>
         {
-            column.Item().AlignCenter().Text(text =>
-            {
-                text.Span("Generated by FlatRate - ").FontSize(8).FontColor(Colors.Grey.Darken1);
-                text.Span(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm")).FontSize(8).FontColor(Colors.Grey.Darken1);
-            });
+            text.Span("Generated by FlatRate").FontSize(8).FontColor(Nord3);
+            text.Span("  \u2022  ").FontSize(8).FontColor(Nord4);
+            text.Span(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm")).FontSize(8).FontColor(Nord3);
         });
+    }
+
+    private static void HeaderCell(IContainer container, string text, bool alignRight)
+    {
+        var cell = container.Background(Nord6).Padding(8);
+        if (alignRight)
+            cell.AlignRight().Text(text).FontSize(8).Bold().FontColor(Nord2);
+        else
+            cell.Text(text).FontSize(8).Bold().FontColor(Nord2);
+    }
+
+    private static void BodyCell(TableDescriptor table, string text, bool alignRight, bool lastRow)
+    {
+        var cell = lastRow
+            ? table.Cell().Padding(8)
+            : table.Cell().BorderBottom(1).BorderColor(Nord5).Padding(8);
+
+        if (alignRight)
+            cell.AlignRight().Text(text).FontSize(9).FontColor(Nord0);
+        else
+            cell.Text(text).FontSize(9).FontColor(Nord0);
+    }
+
+    private static void BodyCellBold(TableDescriptor table, string text, bool lastRow)
+    {
+        var cell = lastRow
+            ? table.Cell().Padding(8)
+            : table.Cell().BorderBottom(1).BorderColor(Nord5).Padding(8);
+
+        cell.AlignRight().Text(text).FontSize(9).Bold().FontColor(Nord0);
     }
 }
