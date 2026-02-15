@@ -14,15 +14,24 @@ namespace FlatRate.Web.Services;
 /// </summary>
 public sealed class InvoicePdfService
 {
-    // Nord palette
-    private static readonly Color Nord0 = Color.FromHex("#2e3440");
-    private static readonly Color Nord1 = Color.FromHex("#3b4252");
-    private static readonly Color Nord2 = Color.FromHex("#434c5e");
-    private static readonly Color Nord3 = Color.FromHex("#4c566a");
-    private static readonly Color Nord4 = Color.FromHex("#d8dee9");
-    private static readonly Color Nord5 = Color.FromHex("#e5e9f0");
-    private static readonly Color Nord6 = Color.FromHex("#eceff4");
-    private static readonly Color Nord13 = Color.FromHex("#ebcb8b");
+    // Nord palette — hex strings used by both QuestPDF Color and inline SVG
+    private const string Nord0Hex = "#2e3440";
+    private const string Nord1Hex = "#3b4252";
+    private const string Nord2Hex = "#434c5e";
+    private const string Nord3Hex = "#4c566a";
+    private const string Nord4Hex = "#d8dee9";
+    private const string Nord5Hex = "#e5e9f0";
+    private const string Nord6Hex = "#eceff4";
+    private const string Nord13Hex = "#ebcb8b";
+
+    private static readonly Color Nord0 = Color.FromHex(Nord0Hex);
+    private static readonly Color Nord1 = Color.FromHex(Nord1Hex);
+    private static readonly Color Nord2 = Color.FromHex(Nord2Hex);
+    private static readonly Color Nord3 = Color.FromHex(Nord3Hex);
+    private static readonly Color Nord4 = Color.FromHex(Nord4Hex);
+    private static readonly Color Nord5 = Color.FromHex(Nord5Hex);
+    private static readonly Color Nord6 = Color.FromHex(Nord6Hex);
+    private static readonly Color Nord13 = Color.FromHex(Nord13Hex);
 
     private readonly IMediator _mediator;
 
@@ -68,16 +77,18 @@ public sealed class InvoicePdfService
             row.RelativeItem().Row(innerRow =>
             {
                 // Aurora Yellow logo square with Voltage Arrow SVG
-                const string logoSvg = """
+                // Background + rounded corners via QuestPDF; SVG contains only the drawing
+                const string logoSvg = $"""
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
-                      <rect width="80" height="80" rx="16" fill="#ebcb8b"/>
                       <path d="M12,40 L22,40 L26,32 L30,48 L34,32 L38,48 L42,40 L52,40"
-                        fill="none" stroke="#2e3440" stroke-width="4"
+                        fill="none" stroke="{Nord0Hex}" stroke-width="4"
                         stroke-linecap="round" stroke-linejoin="round"/>
-                      <polygon points="52,30 68,40 52,50" fill="#2e3440"/>
+                      <polygon points="52,30 68,40 52,50" fill="{Nord0Hex}"/>
                     </svg>
                     """;
-                innerRow.ConstantItem(34).Height(34).Svg(logoSvg);
+                innerRow.ConstantItem(34).Height(34)
+                    .Background(Nord13).CornerRadius(8)
+                    .Svg(logoSvg);
 
                 innerRow.ConstantItem(12); // spacer
 
