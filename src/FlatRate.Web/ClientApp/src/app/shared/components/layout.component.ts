@@ -123,7 +123,7 @@ import { AuthService } from '../../core/services/auth.service';
               <button
                 class="mobile-menu-btn p-2 rounded-lg"
                 style="color: var(--color-text-secondary);"
-                (click)="mobileMenuOpen.update(v => !v)"
+                (click)="toggleMobileMenu()"
                 aria-label="Toggle mobile menu"
               >
                 <i class="pi" [class.pi-bars]="!mobileMenuOpen()" [class.pi-times]="mobileMenuOpen()"></i>
@@ -333,6 +333,10 @@ export class LayoutComponent {
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
   readonly mobileMenuOpen = signal(false);
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen.update(v => !v);
+  }
 
   getInitials(name: string | undefined): string {
     if (!name) return '?';
