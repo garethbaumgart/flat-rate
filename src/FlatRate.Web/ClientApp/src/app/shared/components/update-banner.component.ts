@@ -9,7 +9,7 @@ import { UpdateService } from '../../core/services/update.service';
       <div
         class="fixed bottom-0 left-0 right-0 z-50 border-t flex items-center justify-between px-4 sm:px-6 py-3"
         style="background: var(--color-info-bg); border-color: var(--color-info);"
-        role="alert"
+        role="status"
       >
         <div class="flex items-center gap-3">
           <i class="pi pi-refresh" style="color: var(--color-info);"></i>

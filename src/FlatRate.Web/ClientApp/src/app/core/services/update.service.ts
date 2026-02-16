@@ -27,7 +27,9 @@ export class UpdateService {
 
     interval(6 * 60 * 60 * 1000)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.swUpdate.checkForUpdate());
+      .subscribe(() => {
+        this.swUpdate.checkForUpdate().catch((err) => console.error('Failed to check for updates', err));
+      });
   }
 
   dismiss(): void {
@@ -35,6 +37,8 @@ export class UpdateService {
   }
 
   activateAndReload(): void {
-    this.swUpdate.activateUpdate().then(() => document.location.reload());
+    this.swUpdate.activateUpdate()
+      .then(() => document.location.reload())
+      .catch(() => document.location.reload());
   }
 }
