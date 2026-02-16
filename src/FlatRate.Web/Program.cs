@@ -55,6 +55,32 @@ var authBuilder = builder.Services.AddAuthentication(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    // Return 401 for API requests instead of redirecting to login page.
+    // Without this, fetch() calls to /api/* get redirected to Google OAuth,
+    // which fails due to CORS (browser can't follow cross-origin redirects from JS).
+    options.Events.OnRedirectToLogin = context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/api"))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        }
+        context.Response.Redirect(context.RedirectUri);
+        return Task.CompletedTask;
+    };
+    // Return 403 for API requests instead of redirecting to access denied page.
+    // This avoids CORS/redirect issues when authenticated users lack permission
+    // for a given /api resource.
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/api"))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        }
+        context.Response.Redirect(context.RedirectUri);
+        return Task.CompletedTask;
+    };
     // In development, forward auth to MockAuth scheme when mock header is present
     if (isDevelopment)
     {
