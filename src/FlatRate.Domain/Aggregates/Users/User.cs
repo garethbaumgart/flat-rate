@@ -56,6 +56,8 @@ public sealed class User : AggregateRoot
 
         Name = name.Trim();
         Email = email.Trim().ToLowerInvariant();
-        AvatarUrl = avatarUrl?.Trim();
+
+        if (!string.IsNullOrWhiteSpace(avatarUrl))
+            AvatarUrl = avatarUrl.Trim();
     }
 }
