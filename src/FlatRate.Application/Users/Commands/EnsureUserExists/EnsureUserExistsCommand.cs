@@ -10,4 +10,5 @@ namespace FlatRate.Application.Users.Commands.EnsureUserExists;
 public sealed record EnsureUserExistsCommand(
     string GoogleId,
     string Email,
-    string Name) : IRequest<Guid>;
+    string Name,
+    string? AvatarUrl = null) : IRequest<Guid>;

@@ -10,6 +10,7 @@ public sealed class User : AggregateRoot
     public string GoogleId { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;
     public string Name { get; private set; } = string.Empty;
+    public string? AvatarUrl { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset LastLoginAt { get; private set; }
 
@@ -17,7 +18,7 @@ public sealed class User : AggregateRoot
     {
     }
 
-    public static User Create(string googleId, string email, string name)
+    public static User Create(string googleId, string email, string name, string? avatarUrl = null)
     {
         if (string.IsNullOrWhiteSpace(googleId))
             throw new ArgumentException("Google ID cannot be empty.", nameof(googleId));
@@ -34,6 +35,7 @@ public sealed class User : AggregateRoot
             GoogleId = googleId.Trim(),
             Email = email.Trim().ToLowerInvariant(),
             Name = name.Trim(),
+            AvatarUrl = avatarUrl?.Trim(),
             CreatedAt = now,
             LastLoginAt = now
         };
@@ -44,7 +46,7 @@ public sealed class User : AggregateRoot
         LastLoginAt = DateTimeOffset.UtcNow;
     }
 
-    public void UpdateProfile(string name, string email)
+    public void UpdateProfile(string name, string email, string? avatarUrl = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be empty.", nameof(name));
@@ -54,5 +56,6 @@ public sealed class User : AggregateRoot
 
         Name = name.Trim();
         Email = email.Trim().ToLowerInvariant();
+        AvatarUrl = avatarUrl?.Trim();
     }
 }

@@ -78,9 +78,18 @@ import { UpdateBannerComponent } from './update-banner.component';
               } @else if (authService.isAuthenticated()) {
                 <div class="flex items-center gap-3">
                   <div class="hidden sm:flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white gradient-accent">
-                      {{ getInitials(authService.user()?.name) }}
-                    </div>
+                    @if (authService.user()?.avatarUrl) {
+                      <img
+                        [src]="authService.user()!.avatarUrl!"
+                        [alt]="authService.user()?.name ?? 'User avatar'"
+                        class="w-8 h-8 rounded-full object-cover"
+                        referrerpolicy="no-referrer"
+                      />
+                    } @else {
+                      <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white gradient-accent">
+                        {{ getInitials(authService.user()?.name) }}
+                      </div>
+                    }
                     <span class="text-sm font-medium" style="color: var(--color-text-primary);">
                       {{ authService.user()?.name }}
                     </span>
@@ -134,9 +143,18 @@ import { UpdateBannerComponent } from './update-banner.component';
               @if (authService.isAuthenticated()) {
                 <!-- User info in mobile -->
                 <div class="flex items-center gap-3 px-3 py-3 mb-2 rounded-lg" style="background: var(--color-accent-bg);">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white gradient-accent">
-                    {{ getInitials(authService.user()?.name) }}
-                  </div>
+                  @if (authService.user()?.avatarUrl) {
+                    <img
+                      [src]="authService.user()!.avatarUrl!"
+                      [alt]="authService.user()?.name ?? 'User avatar'"
+                      class="w-10 h-10 rounded-full object-cover"
+                      referrerpolicy="no-referrer"
+                    />
+                  } @else {
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white gradient-accent">
+                      {{ getInitials(authService.user()?.name) }}
+                    </div>
+                  }
                   <div>
                     <div class="font-medium" style="color: var(--color-text-primary);">{{ authService.user()?.name }}</div>
                     <div class="text-xs" style="color: var(--color-text-muted);">{{ authService.user()?.email }}</div>

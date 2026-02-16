@@ -38,13 +38,13 @@ public sealed class EnsureUserExistsCommandHandler : IRequestHandler<EnsureUserE
         {
             // Update last login and profile info
             user.UpdateLastLogin();
-            user.UpdateProfile(request.Name, request.Email);
+            user.UpdateProfile(request.Name, request.Email, request.AvatarUrl);
             _userRepository.Update(user);
         }
         else
         {
             // Create new user
-            user = User.Create(request.GoogleId, request.Email, request.Name);
+            user = User.Create(request.GoogleId, request.Email, request.Name, request.AvatarUrl);
             await _userRepository.AddAsync(user, cancellationToken);
 
             // Check for pending property invites by email and auto-grant them
