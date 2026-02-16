@@ -181,6 +181,8 @@ app.MapGet("/api/auth/user", async (HttpContext context, IMediator mediator) =>
     var googleId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
     var name = context.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "Unknown";
     var email = context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+    var pictureUrl = context.User.FindFirst("urn:google:picture")?.Value?.Trim();
+    if (string.IsNullOrWhiteSpace(pictureUrl)) pictureUrl = null;
 
     if (string.IsNullOrEmpty(googleId))
     {
@@ -194,14 +196,15 @@ app.MapGet("/api/auth/user", async (HttpContext context, IMediator mediator) =>
     }
 
     // Ensure user exists in database (creates if new, updates last login if existing)
-    var userId = await mediator.Send(new EnsureUserExistsCommand(googleId, email, name));
+    var userId = await mediator.Send(new EnsureUserExistsCommand(googleId, email, name, pictureUrl));
 
     return Results.Ok(new
     {
         id = userId,
         googleId = googleId,
         name = name,
-        email = email
+        email = email,
+        avatarUrl = pictureUrl
     });
 }).RequireAuthorization();
 
