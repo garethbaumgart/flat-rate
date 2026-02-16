@@ -1,11 +1,12 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { UpdateBannerComponent } from './update-banner.component';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, UpdateBannerComponent],
   template: `
     <div class="min-h-screen flex flex-col" style="background-color: var(--color-bg-primary);">
       <!-- Navigation Header -->
@@ -236,6 +237,8 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
         </div>
       </footer>
+
+      <app-update-banner />
     </div>
   `,
   styles: [`
