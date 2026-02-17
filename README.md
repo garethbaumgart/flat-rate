@@ -2,6 +2,8 @@
 
 Monthly utility billing for rental properties. Generate electricity, water, and sanitation invoices with tiered tariff calculations and PDF export.
 
+**Live app**: https://flatrate-fjbytiknsa-ts.a.run.app
+
 ## Features
 
 - **Multi-user property sharing**: Share properties with family members via Google OAuth login
