@@ -259,7 +259,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                role="group" aria-labelledby="rates-electricity-legend">
             <div id="rates-electricity-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
                  style="background: var(--color-bg-card); color: var(--color-warning);">
-              ⚡ Electricity
+              <i class="pi pi-bolt"></i> Electricity
             </div>
             <div class="grid grid-cols-1 gap-4">
               <div class="flex flex-col gap-2">
@@ -284,7 +284,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                role="group" aria-labelledby="rates-water-legend">
             <div id="rates-water-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
                  style="background: var(--color-bg-card); color: var(--color-info);">
-              💧 Water
+              <i class="pi pi-wave-pulse"></i> Water
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="flex flex-col gap-2">
@@ -337,7 +337,7 @@ import { Property, SetPropertyRatesRequest } from '../core/models/property.model
                role="group" aria-labelledby="rates-sanitation-legend">
             <div id="rates-sanitation-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
                  style="background: var(--color-bg-card); color: var(--color-success);">
-              ♻ Sanitation
+              <i class="pi pi-sync"></i> Sanitation
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="flex flex-col gap-2">

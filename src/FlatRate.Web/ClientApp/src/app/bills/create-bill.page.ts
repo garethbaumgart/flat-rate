@@ -258,7 +258,7 @@ import { formatDateToISO } from '../core/utils/date-utils';
                  role="group" aria-labelledby="bill-electricity-legend">
               <div id="bill-electricity-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
                    style="background: var(--color-bg-card); color: var(--color-warning);">
-                ⚡ Electricity
+                <i class="pi pi-bolt"></i> Electricity
               </div>
               <div class="grid grid-cols-1 gap-4 md:max-w-[33%]">
                 <div class="flex flex-col gap-2">
@@ -285,7 +285,7 @@ import { formatDateToISO } from '../core/utils/date-utils';
                  role="group" aria-labelledby="bill-water-legend">
               <div id="bill-water-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
                    style="background: var(--color-bg-card); color: var(--color-info);">
-                💧 Water
+                <i class="pi pi-wave-pulse"></i> Water
               </div>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="flex flex-col gap-2">
@@ -344,7 +344,7 @@ import { formatDateToISO } from '../core/utils/date-utils';
                  role="group" aria-labelledby="bill-sanitation-legend">
               <div id="bill-sanitation-legend" class="absolute -top-2.5 left-4 px-2 text-xs font-semibold uppercase tracking-wide"
                    style="background: var(--color-bg-card); color: var(--color-success);">
-                ♻ Sanitation
+                <i class="pi pi-sync"></i> Sanitation
               </div>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="flex flex-col gap-2">
