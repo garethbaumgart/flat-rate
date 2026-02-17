@@ -114,6 +114,21 @@ if (googleConfigured)
         options.ClientId = googleClientId!;
         options.ClientSecret = googleClientSecret!;
         options.CallbackPath = "/api/auth/google-callback";
+        // When RequireAuthorization() triggers a Google challenge for API requests
+        // (e.g. fetch('/api/auth/user')), return 401 instead of redirecting to Google.
+        // Browser fetch() can't follow cross-origin redirects, causing CORS errors.
+        // Exclude /api/auth/login since that's an intentional browser navigation to Google.
+        options.Events.OnRedirectToAuthorizationEndpoint = context =>
+        {
+            if (context.Request.Path.StartsWithSegments("/api") &&
+                !context.Request.Path.Equals("/api/auth/login"))
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            }
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
     });
 }
 
