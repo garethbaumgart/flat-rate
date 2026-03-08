@@ -525,7 +525,7 @@ export class CreateBillPage implements OnInit {
 
   // Form validation
   readonly isFormValid = computed(() => !!(
-    this.selectedPropertyId() &&
+    this.selectedProperty() &&
     this.periodStart() &&
     this.periodEnd() &&
     this.periodEnd()! >= this.periodStart()! &&
@@ -553,26 +553,21 @@ export class CreateBillPage implements OnInit {
   }
 
   onPropertyChange(propertyId: string | null): void {
-    this.selectedPropertyId.set(propertyId);
+    const property = propertyId
+      ? this.propertyService.properties().find(p => p.id === propertyId) ?? null
+      : null;
 
-    if (!propertyId) {
-      this.selectedProperty.set(null);
-      return;
-    }
+    this.selectedPropertyId.set(property ? propertyId : null);
+    this.selectedProperty.set(property);
 
-    const property = this.propertyService.properties().find(p => p.id === propertyId);
-    this.selectedProperty.set(property || null);
-
-    // Pre-fill rates from property defaults
-    if (property) {
-      this.electricityRate.set(property.defaultElectricityRate ?? 0);
-      this.waterRateTier1.set(property.defaultWaterRateTier1 ?? 0);
-      this.waterRateTier2.set(property.defaultWaterRateTier2 ?? 0);
-      this.waterRateTier3.set(property.defaultWaterRateTier3 ?? 0);
-      this.sanitationRateTier1.set(property.defaultSanitationRateTier1 ?? 0);
-      this.sanitationRateTier2.set(property.defaultSanitationRateTier2 ?? 0);
-      this.sanitationRateTier3.set(property.defaultSanitationRateTier3 ?? 0);
-    }
+    // Pre-fill rates from property defaults (or reset to 0)
+    this.electricityRate.set(property?.defaultElectricityRate ?? 0);
+    this.waterRateTier1.set(property?.defaultWaterRateTier1 ?? 0);
+    this.waterRateTier2.set(property?.defaultWaterRateTier2 ?? 0);
+    this.waterRateTier3.set(property?.defaultWaterRateTier3 ?? 0);
+    this.sanitationRateTier1.set(property?.defaultSanitationRateTier1 ?? 0);
+    this.sanitationRateTier2.set(property?.defaultSanitationRateTier2 ?? 0);
+    this.sanitationRateTier3.set(property?.defaultSanitationRateTier3 ?? 0);
   }
 
   async onSubmit(): Promise<void> {

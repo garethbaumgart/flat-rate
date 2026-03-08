@@ -48,7 +48,7 @@ async function createPropertyAPI(headers: Record<string, string>, name: string, 
 }
 
 async function setRatesAPI(headers: Record<string, string>, propertyId: string) {
-  await fetch(`${API_URL}/api/properties/${propertyId}/rates`, {
+  const res = await fetch(`${API_URL}/api/properties/${propertyId}/rates`, {
     method: 'PUT',
     headers: { ...headers, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -61,6 +61,9 @@ async function setRatesAPI(headers: Record<string, string>, propertyId: string) 
       sanitationRateTier3: 16.00,
     }),
   });
+  if (!res.ok) {
+    throw new Error(`Failed to set rates: ${res.status} ${res.statusText} - ${await res.text()}`);
+  }
 }
 
 // ============================================================
@@ -154,6 +157,7 @@ test.describe('Bug Fix: Shared property rates pre-fill for editor', () => {
 
     // Ensure second user exists
     const userRes = await fetch(`${API_URL}/api/auth/user`, { headers: EDITOR_HEADERS });
+    if (!userRes.ok) throw new Error(`Failed to get editor user: ${userRes.status}`);
     const userData = await userRes.json();
 
     // Create property as owner with rates
@@ -162,11 +166,12 @@ test.describe('Bug Fix: Shared property rates pre-fill for editor', () => {
     await setRatesAPI(OWNER_HEADERS, propertyId);
 
     // Share with editor
-    await fetch(`${API_URL}/api/properties/${propertyId}/collaborators`, {
+    const shareRes = await fetch(`${API_URL}/api/properties/${propertyId}/collaborators`, {
       method: 'POST',
       headers: { ...OWNER_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: userData.email }),
     });
+    if (!shareRes.ok) throw new Error(`Failed to share property: ${shareRes.status}`);
   });
 
   test('editor sees pre-filled rates when selecting shared property', async ({ browser }) => {
