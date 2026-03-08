@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 
-const BASE_URL = 'http://localhost:4201';
-const API_URL = 'http://localhost:5003';
+const BASE_URL = process.env.BASE_URL ?? 'http://localhost:4201';
+const API_URL = process.env.API_URL ?? 'http://localhost:5003';
 
 const OWNER_HEADERS = { 'X-Mock-User': 'dev-user-1|Developer|dev@flatrate.local' };
 const EDITOR_HEADERS = { 'X-Mock-User': 'second-user|Second User|second@test.com' };
@@ -40,7 +40,11 @@ async function createPropertyAPI(headers: Record<string, string>, name: string, 
     headers: { ...headers, 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, address }),
   });
-  return res.json();
+  const bodyText = await res.text();
+  if (!res.ok) {
+    throw new Error(`Failed to create property: ${res.status} ${res.statusText} - ${bodyText}`);
+  }
+  return JSON.parse(bodyText);
 }
 
 async function setRatesAPI(headers: Record<string, string>, propertyId: string) {

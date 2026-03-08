@@ -552,8 +552,14 @@ export class CreateBillPage implements OnInit {
     this.periodEnd.set(lastMonthEnd);
   }
 
-  onPropertyChange(propertyId: string): void {
+  onPropertyChange(propertyId: string | null): void {
     this.selectedPropertyId.set(propertyId);
+
+    if (!propertyId) {
+      this.selectedProperty.set(null);
+      return;
+    }
+
     const property = this.propertyService.properties().find(p => p.id === propertyId);
     this.selectedProperty.set(property || null);
 
