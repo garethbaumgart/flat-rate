@@ -14,7 +14,7 @@ import { MessageService } from 'primeng/api';
 import { PropertyService } from '../core/services/property.service';
 import { BillService } from '../core/services/bill.service';
 import { Property } from '../core/models/property.model';
-import { CreateBillRequest, BillPreview } from '../core/models/bill.model';
+import { CreateBillRequest } from '../core/models/bill.model';
 import { formatDateToISO } from '../core/utils/date-utils';
 
 @Component({
@@ -49,13 +49,13 @@ import { formatDateToISO } from '../core/utils/date-utils';
               <p-select
                 id="property"
                 [options]="propertyOptions()"
-                [(ngModel)]="selectedPropertyId"
+                [ngModel]="selectedPropertyId()"
+                (ngModelChange)="onPropertyChange($event)"
                 name="property"
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Select a property"
                 styleClass="w-full"
-                (onChange)="onPropertyChange($event.value)"
               />
             </div>
             @if (selectedProperty()) {
@@ -74,7 +74,8 @@ import { formatDateToISO } from '../core/utils/date-utils';
               <label for="periodStart" class="font-medium" style="color: var(--color-text-primary);">Period Start *</label>
               <p-datepicker
                 id="periodStart"
-                [(ngModel)]="periodStart"
+                [ngModel]="periodStart()"
+                (ngModelChange)="periodStart.set($event)"
                 name="periodStart"
                 dateFormat="yy-mm-dd"
                 styleClass="w-full"
@@ -85,7 +86,8 @@ import { formatDateToISO } from '../core/utils/date-utils';
               <label for="periodEnd" class="font-medium" style="color: var(--color-text-primary);">Period End *</label>
               <p-datepicker
                 id="periodEnd"
-                [(ngModel)]="periodEnd"
+                [ngModel]="periodEnd()"
+                (ngModelChange)="periodEnd.set($event)"
                 name="periodEnd"
                 dateFormat="yy-mm-dd"
                 styleClass="w-full"
@@ -114,28 +116,28 @@ import { formatDateToISO } from '../core/utils/date-utils';
                   <label for="elecOpening" class="text-sm">Opening Reading</label>
                   <p-inputNumber
                     id="elecOpening"
-                    [(ngModel)]="electricityOpening"
+                    [ngModel]="electricityOpening()"
+                    (ngModelChange)="electricityOpening.set($event ?? 0)"
                     name="elecOpening"
                     mode="decimal"
                     [useGrouping]="false"
                     [minFractionDigits]="0"
                     [maxFractionDigits]="2"
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
                 <div class="flex flex-col gap-2">
                   <label for="elecClosing" class="text-sm">Closing Reading</label>
                   <p-inputNumber
                     id="elecClosing"
-                    [(ngModel)]="electricityClosing"
+                    [ngModel]="electricityClosing()"
+                    (ngModelChange)="electricityClosing.set($event ?? 0)"
                     name="elecClosing"
                     mode="decimal"
                     [useGrouping]="false"
                     [minFractionDigits]="0"
                     [maxFractionDigits]="2"
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
                 <div class="flex flex-col gap-2">
@@ -157,28 +159,28 @@ import { formatDateToISO } from '../core/utils/date-utils';
                   <label for="waterOpening" class="text-sm">Opening Reading</label>
                   <p-inputNumber
                     id="waterOpening"
-                    [(ngModel)]="waterOpening"
+                    [ngModel]="waterOpening()"
+                    (ngModelChange)="waterOpening.set($event ?? 0)"
                     name="waterOpening"
                     mode="decimal"
                     [useGrouping]="false"
                     [minFractionDigits]="0"
                     [maxFractionDigits]="2"
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
                 <div class="flex flex-col gap-2">
                   <label for="waterClosing" class="text-sm">Closing Reading</label>
                   <p-inputNumber
                     id="waterClosing"
-                    [(ngModel)]="waterClosing"
+                    [ngModel]="waterClosing()"
+                    (ngModelChange)="waterClosing.set($event ?? 0)"
                     name="waterClosing"
                     mode="decimal"
                     [useGrouping]="false"
                     [minFractionDigits]="0"
                     [maxFractionDigits]="2"
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
                 <div class="flex flex-col gap-2">
@@ -200,28 +202,28 @@ import { formatDateToISO } from '../core/utils/date-utils';
                   <label for="sanitationOpening" class="text-sm">Opening Reading</label>
                   <p-inputNumber
                     id="sanitationOpening"
-                    [(ngModel)]="sanitationOpening"
+                    [ngModel]="sanitationOpening()"
+                    (ngModelChange)="sanitationOpening.set($event ?? 0)"
                     name="sanitationOpening"
                     mode="decimal"
                     [useGrouping]="false"
                     [minFractionDigits]="0"
                     [maxFractionDigits]="2"
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
                 <div class="flex flex-col gap-2">
                   <label for="sanitationClosing" class="text-sm">Closing Reading</label>
                   <p-inputNumber
                     id="sanitationClosing"
-                    [(ngModel)]="sanitationClosing"
+                    [ngModel]="sanitationClosing()"
+                    (ngModelChange)="sanitationClosing.set($event ?? 0)"
                     name="sanitationClosing"
                     mode="decimal"
                     [useGrouping]="false"
                     [minFractionDigits]="0"
                     [maxFractionDigits]="2"
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
                 <div class="flex flex-col gap-2">
@@ -265,7 +267,8 @@ import { formatDateToISO } from '../core/utils/date-utils';
                   <label for="elecRate" class="font-medium">Rate (per kWh)</label>
                   <p-inputNumber
                     id="elecRate"
-                    [(ngModel)]="electricityRate"
+                    [ngModel]="electricityRate()"
+                    (ngModelChange)="electricityRate.set($event ?? 0)"
                     name="elecRate"
                     mode="decimal"
                     [useGrouping]="false"
@@ -274,7 +277,6 @@ import { formatDateToISO } from '../core/utils/date-utils';
                     [maxFractionDigits]="4"
                     prefix="R "
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
               </div>
@@ -292,7 +294,8 @@ import { formatDateToISO } from '../core/utils/date-utils';
                   <label for="waterTier1" class="font-medium">Tier 1 (0–6 kL)</label>
                   <p-inputNumber
                     id="waterTier1"
-                    [(ngModel)]="waterRateTier1"
+                    [ngModel]="waterRateTier1()"
+                    (ngModelChange)="waterRateTier1.set($event ?? 0)"
                     name="waterTier1"
                     mode="decimal"
                     [useGrouping]="false"
@@ -301,14 +304,14 @@ import { formatDateToISO } from '../core/utils/date-utils';
                     [maxFractionDigits]="4"
                     prefix="R "
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
                 <div class="flex flex-col gap-2">
                   <label for="waterTier2" class="font-medium">Tier 2 (7–15 kL)</label>
                   <p-inputNumber
                     id="waterTier2"
-                    [(ngModel)]="waterRateTier2"
+                    [ngModel]="waterRateTier2()"
+                    (ngModelChange)="waterRateTier2.set($event ?? 0)"
                     name="waterTier2"
                     mode="decimal"
                     [useGrouping]="false"
@@ -317,14 +320,14 @@ import { formatDateToISO } from '../core/utils/date-utils';
                     [maxFractionDigits]="4"
                     prefix="R "
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
                 <div class="flex flex-col gap-2">
                   <label for="waterTier3" class="font-medium">Tier 3 (16+ kL)</label>
                   <p-inputNumber
                     id="waterTier3"
-                    [(ngModel)]="waterRateTier3"
+                    [ngModel]="waterRateTier3()"
+                    (ngModelChange)="waterRateTier3.set($event ?? 0)"
                     name="waterTier3"
                     mode="decimal"
                     [useGrouping]="false"
@@ -333,7 +336,6 @@ import { formatDateToISO } from '../core/utils/date-utils';
                     [maxFractionDigits]="4"
                     prefix="R "
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
               </div>
@@ -351,7 +353,8 @@ import { formatDateToISO } from '../core/utils/date-utils';
                   <label for="sanitationTier1" class="font-medium">Tier 1 (0–6 kL)</label>
                   <p-inputNumber
                     id="sanitationTier1"
-                    [(ngModel)]="sanitationRateTier1"
+                    [ngModel]="sanitationRateTier1()"
+                    (ngModelChange)="sanitationRateTier1.set($event ?? 0)"
                     name="sanitationTier1"
                     mode="decimal"
                     [useGrouping]="false"
@@ -360,14 +363,14 @@ import { formatDateToISO } from '../core/utils/date-utils';
                     [maxFractionDigits]="4"
                     prefix="R "
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
                 <div class="flex flex-col gap-2">
                   <label for="sanitationTier2" class="font-medium">Tier 2 (7–15 kL)</label>
                   <p-inputNumber
                     id="sanitationTier2"
-                    [(ngModel)]="sanitationRateTier2"
+                    [ngModel]="sanitationRateTier2()"
+                    (ngModelChange)="sanitationRateTier2.set($event ?? 0)"
                     name="sanitationTier2"
                     mode="decimal"
                     [useGrouping]="false"
@@ -376,14 +379,14 @@ import { formatDateToISO } from '../core/utils/date-utils';
                     [maxFractionDigits]="4"
                     prefix="R "
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
                 <div class="flex flex-col gap-2">
                   <label for="sanitationTier3" class="font-medium">Tier 3 (16+ kL)</label>
                   <p-inputNumber
                     id="sanitationTier3"
-                    [(ngModel)]="sanitationRateTier3"
+                    [ngModel]="sanitationRateTier3()"
+                    (ngModelChange)="sanitationRateTier3.set($event ?? 0)"
                     name="sanitationTier3"
                     mode="decimal"
                     [useGrouping]="false"
@@ -392,7 +395,6 @@ import { formatDateToISO } from '../core/utils/date-utils';
                     [maxFractionDigits]="4"
                     prefix="R "
                     styleClass="w-full"
-                    (onInput)="updatePreview()"
                   />
                 </div>
               </div>
@@ -472,50 +474,72 @@ export class CreateBillPage implements OnInit {
   private readonly router = inject(Router);
 
   // Property selection
-  selectedPropertyId: string | null = null;
-  selectedProperty = signal<Property | null>(null);
+  readonly selectedPropertyId = signal<string | null>(null);
+  readonly selectedProperty = signal<Property | null>(null);
 
   // Billing period
-  periodStart: Date | null = null;
-  periodEnd: Date | null = null;
+  readonly periodStart = signal<Date | null>(null);
+  readonly periodEnd = signal<Date | null>(null);
 
   // Meter readings
-  electricityOpening: number = 0;
-  electricityClosing: number = 0;
-  waterOpening: number = 0;
-  waterClosing: number = 0;
-  sanitationOpening: number = 0;
-  sanitationClosing: number = 0;
+  readonly electricityOpening = signal(0);
+  readonly electricityClosing = signal(0);
+  readonly waterOpening = signal(0);
+  readonly waterClosing = signal(0);
+  readonly sanitationOpening = signal(0);
+  readonly sanitationClosing = signal(0);
 
   // Tariff rates
-  electricityRate: number = 0;
-  waterRateTier1: number = 0;
-  waterRateTier2: number = 0;
-  waterRateTier3: number = 0;
-  sanitationRateTier1: number = 0;
-  sanitationRateTier2: number = 0;
-  sanitationRateTier3: number = 0;
+  readonly electricityRate = signal(0);
+  readonly waterRateTier1 = signal(0);
+  readonly waterRateTier2 = signal(0);
+  readonly waterRateTier3 = signal(0);
+  readonly sanitationRateTier1 = signal(0);
+  readonly sanitationRateTier2 = signal(0);
+  readonly sanitationRateTier3 = signal(0);
 
   // Computed preview
-  preview = signal<BillPreview>({
-    electricityUnits: 0,
-    waterUnits: 0,
-    sanitationUnits: 0,
-    electricityCost: 0,
-    waterCost: 0,
-    sanitationCost: 0,
-    subtotal: 0,
-    vatAmount: 0,
-    total: 0
-  });
+  readonly preview = computed(() => this.billService.calculatePreview(
+    this.electricityOpening(),
+    this.electricityClosing(),
+    this.waterOpening(),
+    this.waterClosing(),
+    this.sanitationOpening(),
+    this.sanitationClosing(),
+    this.electricityRate(),
+    this.waterRateTier1(),
+    this.waterRateTier2(),
+    this.waterRateTier3(),
+    this.sanitationRateTier1(),
+    this.sanitationRateTier2(),
+    this.sanitationRateTier3()
+  ));
 
   // Property dropdown options
-  propertyOptions = computed(() =>
+  readonly propertyOptions = computed(() =>
     this.propertyService.properties().map(p => ({
       label: `${p.name} - ${p.address}`,
       value: p.id
     }))
   );
+
+  // Form validation
+  readonly isFormValid = computed(() => !!(
+    this.selectedProperty() &&
+    this.periodStart() &&
+    this.periodEnd() &&
+    this.periodEnd()! >= this.periodStart()! &&
+    this.electricityClosing() >= this.electricityOpening() &&
+    this.waterClosing() >= this.waterOpening() &&
+    this.sanitationClosing() >= this.sanitationOpening() &&
+    this.electricityRate() >= 0 &&
+    this.waterRateTier1() >= 0 &&
+    this.waterRateTier2() >= 0 &&
+    this.waterRateTier3() >= 0 &&
+    this.sanitationRateTier1() >= 0 &&
+    this.sanitationRateTier2() >= 0 &&
+    this.sanitationRateTier3() >= 0
+  ));
 
   ngOnInit(): void {
     this.propertyService.loadProperties();
@@ -524,64 +548,26 @@ export class CreateBillPage implements OnInit {
     const today = new Date();
     const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
     const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-    this.periodStart = lastMonth;
-    this.periodEnd = lastMonthEnd;
+    this.periodStart.set(lastMonth);
+    this.periodEnd.set(lastMonthEnd);
   }
 
-  onPropertyChange(propertyId: string): void {
-    const property = this.propertyService.properties().find(p => p.id === propertyId);
-    this.selectedProperty.set(property || null);
+  onPropertyChange(propertyId: string | null): void {
+    const property = propertyId
+      ? this.propertyService.properties().find(p => p.id === propertyId) ?? null
+      : null;
 
-    // Pre-fill rates from property defaults
-    if (property) {
-      this.electricityRate = property.defaultElectricityRate ?? 0;
-      this.waterRateTier1 = property.defaultWaterRateTier1 ?? 0;
-      this.waterRateTier2 = property.defaultWaterRateTier2 ?? 0;
-      this.waterRateTier3 = property.defaultWaterRateTier3 ?? 0;
-      this.sanitationRateTier1 = property.defaultSanitationRateTier1 ?? 0;
-      this.sanitationRateTier2 = property.defaultSanitationRateTier2 ?? 0;
-      this.sanitationRateTier3 = property.defaultSanitationRateTier3 ?? 0;
+    this.selectedPropertyId.set(property ? propertyId : null);
+    this.selectedProperty.set(property);
 
-      this.updatePreview();
-    }
-  }
-
-  updatePreview(): void {
-    const newPreview = this.billService.calculatePreview(
-      this.electricityOpening || 0,
-      this.electricityClosing || 0,
-      this.waterOpening || 0,
-      this.waterClosing || 0,
-      this.sanitationOpening || 0,
-      this.sanitationClosing || 0,
-      this.electricityRate || 0,
-      this.waterRateTier1 || 0,
-      this.waterRateTier2 || 0,
-      this.waterRateTier3 || 0,
-      this.sanitationRateTier1 || 0,
-      this.sanitationRateTier2 || 0,
-      this.sanitationRateTier3 || 0
-    );
-    this.preview.set(newPreview);
-  }
-
-  isFormValid(): boolean {
-    return !!(
-      this.selectedPropertyId &&
-      this.periodStart &&
-      this.periodEnd &&
-      this.periodEnd >= this.periodStart &&
-      this.electricityClosing >= this.electricityOpening &&
-      this.waterClosing >= this.waterOpening &&
-      this.sanitationClosing >= this.sanitationOpening &&
-      this.electricityRate > 0 &&
-      this.waterRateTier1 > 0 &&
-      this.waterRateTier2 > 0 &&
-      this.waterRateTier3 > 0 &&
-      this.sanitationRateTier1 > 0 &&
-      this.sanitationRateTier2 > 0 &&
-      this.sanitationRateTier3 > 0
-    );
+    // Pre-fill rates from property defaults (or reset to 0)
+    this.electricityRate.set(property?.defaultElectricityRate ?? 0);
+    this.waterRateTier1.set(property?.defaultWaterRateTier1 ?? 0);
+    this.waterRateTier2.set(property?.defaultWaterRateTier2 ?? 0);
+    this.waterRateTier3.set(property?.defaultWaterRateTier3 ?? 0);
+    this.sanitationRateTier1.set(property?.defaultSanitationRateTier1 ?? 0);
+    this.sanitationRateTier2.set(property?.defaultSanitationRateTier2 ?? 0);
+    this.sanitationRateTier3.set(property?.defaultSanitationRateTier3 ?? 0);
   }
 
   async onSubmit(): Promise<void> {
@@ -595,22 +581,22 @@ export class CreateBillPage implements OnInit {
     }
 
     const request: CreateBillRequest = {
-      propertyId: this.selectedPropertyId!,
-      periodStart: this.formatDate(this.periodStart!),
-      periodEnd: this.formatDate(this.periodEnd!),
-      electricityReadingOpening: this.electricityOpening,
-      electricityReadingClosing: this.electricityClosing,
-      waterReadingOpening: this.waterOpening,
-      waterReadingClosing: this.waterClosing,
-      sanitationReadingOpening: this.sanitationOpening,
-      sanitationReadingClosing: this.sanitationClosing,
-      electricityRate: this.electricityRate,
-      waterRateTier1: this.waterRateTier1,
-      waterRateTier2: this.waterRateTier2,
-      waterRateTier3: this.waterRateTier3,
-      sanitationRateTier1: this.sanitationRateTier1,
-      sanitationRateTier2: this.sanitationRateTier2,
-      sanitationRateTier3: this.sanitationRateTier3
+      propertyId: this.selectedPropertyId()!,
+      periodStart: this.formatDate(this.periodStart()!),
+      periodEnd: this.formatDate(this.periodEnd()!),
+      electricityReadingOpening: this.electricityOpening(),
+      electricityReadingClosing: this.electricityClosing(),
+      waterReadingOpening: this.waterOpening(),
+      waterReadingClosing: this.waterClosing(),
+      sanitationReadingOpening: this.sanitationOpening(),
+      sanitationReadingClosing: this.sanitationClosing(),
+      electricityRate: this.electricityRate(),
+      waterRateTier1: this.waterRateTier1(),
+      waterRateTier2: this.waterRateTier2(),
+      waterRateTier3: this.waterRateTier3(),
+      sanitationRateTier1: this.sanitationRateTier1(),
+      sanitationRateTier2: this.sanitationRateTier2(),
+      sanitationRateTier3: this.sanitationRateTier3()
     };
 
     const billId = await this.billService.createBill(request);
